@@ -49,8 +49,8 @@ export function PaginaReportes() {
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 className="text-2xl font-bold">Reportes</h2>
-        <div className="flex items-end gap-2">
-          <div>
+        <div className="flex w-full items-end gap-2 sm:w-auto">
+          <div className="flex-1 sm:flex-none">
             <label className="etiqueta" htmlFor="desde">Desde</label>
             <input
               id="desde"
@@ -60,7 +60,7 @@ export function PaginaReportes() {
               onChange={(evento) => setDesde(evento.target.value)}
             />
           </div>
-          <div>
+          <div className="flex-1 sm:flex-none">
             <label className="etiqueta" htmlFor="hasta">Hasta</label>
             <input
               id="hasta"
@@ -79,7 +79,7 @@ export function PaginaReportes() {
         <section className="tarjeta">
           <p className="text-sm text-gray-500">Ganancia del período</p>
           <p
-            className={`text-5xl font-semibold ${
+            className={`text-4xl font-semibold sm:text-5xl ${
               ganancias.data.gananciaTotal < 0 ? 'text-red-600' : 'text-gray-900'
             }`}
           >
@@ -123,7 +123,9 @@ export function PaginaReportes() {
                   <th className="encabezado-tabla">#</th>
                   <th className="encabezado-tabla">Producto</th>
                   <th className="encabezado-tabla text-right">Cantidad vendida</th>
-                  <th className="encabezado-tabla text-right">Total vendido</th>
+                  <th className="encabezado-tabla hidden text-right sm:table-cell">
+                    Total vendido
+                  </th>
                   <th className="encabezado-tabla text-right">Ganancia</th>
                 </tr>
               </thead>
@@ -135,7 +137,7 @@ export function PaginaReportes() {
                     <td className="celda text-right tabular-nums">
                       {formatearCantidad(producto.cantidadVendida, producto.unidadMedida)}
                     </td>
-                    <td className="celda text-right tabular-nums">
+                    <td className="celda hidden text-right tabular-nums sm:table-cell">
                       {formatearMoneda(producto.totalVendido)}
                     </td>
                     <td className="celda text-right tabular-nums">
@@ -172,7 +174,7 @@ export function PaginaReportes() {
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
                   <th className="encabezado-tabla">Cliente</th>
-                  <th className="encabezado-tabla">Teléfono</th>
+                  <th className="encabezado-tabla hidden sm:table-cell">Teléfono</th>
                   <th className="encabezado-tabla text-right">Debe</th>
                   <th className="encabezado-tabla"></th>
                 </tr>
@@ -181,7 +183,9 @@ export function PaginaReportes() {
                 {deudas.data.map((deuda) => (
                   <tr key={deuda.clienteId}>
                     <td className="celda font-medium">{deuda.nombre}</td>
-                    <td className="celda">{deuda.telefono ?? '—'}</td>
+                    <td className="celda hidden sm:table-cell">
+                      {deuda.telefono ?? '—'}
+                    </td>
                     <td className="celda text-right font-semibold tabular-nums">
                       {formatearMoneda(deuda.saldoDeudor)}
                     </td>
@@ -217,9 +221,11 @@ export function PaginaReportes() {
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
                   <th className="encabezado-tabla">Producto</th>
-                  <th className="encabezado-tabla">Categoría</th>
+                  <th className="encabezado-tabla hidden sm:table-cell">Categoría</th>
                   <th className="encabezado-tabla text-right">Stock</th>
-                  <th className="encabezado-tabla text-right">Costo</th>
+                  <th className="encabezado-tabla hidden text-right sm:table-cell">
+                    Costo
+                  </th>
                   <th className="encabezado-tabla text-right">Precio de venta</th>
                 </tr>
               </thead>
@@ -227,13 +233,13 @@ export function PaginaReportes() {
                 {stock.data.map((producto) => (
                   <tr key={producto.productoId}>
                     <td className="celda font-medium">{producto.nombre}</td>
-                    <td className="celda">
+                    <td className="celda hidden sm:table-cell">
                       {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
                     </td>
                     <td className="celda text-right tabular-nums">
                       {formatearCantidad(producto.stockActual, producto.unidadMedida)}
                     </td>
-                    <td className="celda text-right tabular-nums">
+                    <td className="celda hidden text-right tabular-nums sm:table-cell">
                       {formatearMoneda(producto.costoUnitarioReferencia)}
                     </td>
                     <td className="celda text-right tabular-nums">

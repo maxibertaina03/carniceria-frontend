@@ -81,7 +81,7 @@ export function FormularioNuevaCompra() {
       <h2 className="mb-4 text-2xl font-bold">Registrar compra</h2>
 
       <form onSubmit={manejarEnvio} className="tarjeta flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="etiqueta" htmlFor="proveedor">Proveedor (opcional)</label>
             <input
@@ -104,7 +104,7 @@ export function FormularioNuevaCompra() {
         </div>
 
         <div>
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <span className="etiqueta mb-0">Productos comprados</span>
             <button
               type="button"
@@ -117,57 +117,63 @@ export function FormularioNuevaCompra() {
 
           <div className="flex flex-col gap-2">
             {lineas.map((linea, indice) => (
-              <div key={indice} className="flex items-center gap-2">
-                <select
-                  className="campo flex-1"
-                  value={linea.productoId}
-                  onChange={(evento) => elegirProducto(indice, evento.target.value)}
-                >
-                  <option value="">Elegir producto…</option>
-                  {productos?.map((producto) => (
-                    <option key={producto.id} value={producto.id}>
-                      {producto.nombre}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className="campo w-28"
-                  type="number"
-                  min="0.001"
-                  step="0.001"
-                  placeholder="Cantidad"
-                  value={linea.cantidad}
-                  onChange={(evento) =>
-                    cambiarLinea(indice, { cantidad: evento.target.value })
-                  }
-                  required={Boolean(linea.productoId)}
-                />
-                <input
-                  className="campo w-32"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Costo x kg/u."
-                  value={linea.costoUnitario}
-                  onChange={(evento) =>
-                    cambiarLinea(indice, { costoUnitario: evento.target.value })
-                  }
-                  required={Boolean(linea.productoId)}
-                />
-                <button
-                  type="button"
-                  className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
-                  onClick={() =>
-                    setLineas((previas) =>
-                      previas.length > 1
-                        ? previas.filter((_, i) => i !== indice)
-                        : [{ ...lineaVacia }],
-                    )
-                  }
-                  aria-label="Quitar línea"
-                >
-                  ✕
-                </button>
+              <div
+                key={indice}
+                className="rounded-lg border border-gray-100 p-2 sm:border-0 sm:p-0"
+              >
+                {/* En el celular el producto ocupa una fila y cantidad/costo la siguiente */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    className="campo sm:w-auto sm:flex-1"
+                    value={linea.productoId}
+                    onChange={(evento) => elegirProducto(indice, evento.target.value)}
+                  >
+                    <option value="">Elegir producto…</option>
+                    {productos?.map((producto) => (
+                      <option key={producto.id} value={producto.id}>
+                        {producto.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="campo min-w-0 flex-1 sm:w-28 sm:flex-none"
+                    type="number"
+                    min="0.001"
+                    step="0.001"
+                    placeholder="Cantidad"
+                    value={linea.cantidad}
+                    onChange={(evento) =>
+                      cambiarLinea(indice, { cantidad: evento.target.value })
+                    }
+                    required={Boolean(linea.productoId)}
+                  />
+                  <input
+                    className="campo min-w-0 flex-1 sm:w-32 sm:flex-none"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Costo x kg/u."
+                    value={linea.costoUnitario}
+                    onChange={(evento) =>
+                      cambiarLinea(indice, { costoUnitario: evento.target.value })
+                    }
+                    required={Boolean(linea.productoId)}
+                  />
+                  <button
+                    type="button"
+                    className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                    onClick={() =>
+                      setLineas((previas) =>
+                        previas.length > 1
+                          ? previas.filter((_, i) => i !== indice)
+                          : [{ ...lineaVacia }],
+                      )
+                    }
+                    aria-label="Quitar línea"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -187,8 +193,10 @@ export function FormularioNuevaCompra() {
 
         <AvisoError mensaje={error} />
 
-        <div className="flex justify-end gap-2">
-          <Link to="/compras" className="boton-secundario">Cancelar</Link>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Link to="/compras" className="boton-secundario text-center">
+            Cancelar
+          </Link>
           <button
             type="submit"
             className="boton-primario"

@@ -13,11 +13,11 @@ export function Modal({ titulo, abierto, alCerrar, children }: Props) {
   }
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
       onClick={alCerrar}
     >
       <div
-        className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-xl"
         onClick={(evento) => evento.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

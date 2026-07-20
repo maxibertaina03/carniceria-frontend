@@ -11,7 +11,7 @@ export function ListaClientes() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-2xl font-bold">Clientes y fiado</h2>
         <button className="boton-primario" onClick={() => setModalAbierto(true)}>
           + Nuevo cliente
@@ -20,8 +20,43 @@ export function ListaClientes() {
 
       <EstadoConsulta cargando={isLoading} error={error} />
 
-      {clientes && (
-        <div className="tarjeta overflow-x-auto p-0">
+      {clientes && clientes.length === 0 && (
+        <p className="tarjeta py-8 text-center text-gray-500">
+          Todavía no hay clientes. Se crean desde acá o al hacer una venta fiada.
+        </p>
+      )}
+
+      {/* Tarjetas apiladas: celular */}
+      {clientes && clientes.length > 0 && (
+        <div className="space-y-2 md:hidden">
+          {clientes.map((cliente) => (
+            <Link
+              key={cliente.id}
+              to={`/clientes/${cliente.id}`}
+              className="tarjeta flex items-center justify-between gap-2 active:bg-gray-50"
+            >
+              <div>
+                <p className="font-semibold">{cliente.nombre}</p>
+                <p className="text-sm text-gray-500">{cliente.telefono ?? '—'}</p>
+              </div>
+              <div className="text-right">
+                {cliente.saldoDeudor > 0 ? (
+                  <p className="font-semibold text-red-600">
+                    {formatearMoneda(cliente.saldoDeudor)}
+                  </p>
+                ) : (
+                  <p className="text-sm font-medium text-green-700">Al día</p>
+                )}
+                <p className="text-xs text-blue-700">Ver cuenta →</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Tabla: pantallas medianas y grandes */}
+      {clientes && clientes.length > 0 && (
+        <div className="tarjeta hidden overflow-x-auto p-0 md:block">
           <table className="w-full">
             <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
@@ -55,13 +90,6 @@ export function ListaClientes() {
                   </td>
                 </tr>
               ))}
-              {clientes.length === 0 && (
-                <tr>
-                  <td className="celda py-8 text-center text-gray-500" colSpan={4}>
-                    Todavía no hay clientes. Se crean desde acá o al hacer una venta fiada.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>

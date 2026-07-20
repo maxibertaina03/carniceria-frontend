@@ -111,10 +111,14 @@ export function FormularioNuevaVenta() {
             {lineas.map((linea, indice) => {
               const producto = productos?.find((p) => p.id === linea.productoId);
               return (
-                <div key={indice}>
-                  <div className="flex items-center gap-2">
+                <div
+                  key={indice}
+                  className="rounded-lg border border-gray-100 p-2 sm:border-0 sm:p-0"
+                >
+                  {/* En el celular el producto ocupa una fila y cantidad/precio la siguiente */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <select
-                      className="campo flex-1"
+                      className="campo sm:w-auto sm:flex-1"
                       value={linea.productoId}
                       onChange={(evento) => elegirProducto(indice, evento.target.value)}
                     >
@@ -126,7 +130,7 @@ export function FormularioNuevaVenta() {
                       ))}
                     </select>
                     <input
-                      className="campo w-28"
+                      className="campo min-w-0 flex-1 sm:w-28 sm:flex-none"
                       type="number"
                       min="0.001"
                       step="0.001"
@@ -138,7 +142,7 @@ export function FormularioNuevaVenta() {
                       required={Boolean(linea.productoId)}
                     />
                     <input
-                      className="campo w-32"
+                      className="campo min-w-0 flex-1 sm:w-32 sm:flex-none"
                       type="number"
                       min="0"
                       step="0.01"
@@ -195,7 +199,7 @@ export function FormularioNuevaVenta() {
 
         <div>
           <span className="etiqueta">¿Cómo paga?</span>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:flex">
             {(
               [
                 ['CONTADO', 'Paga todo ahora'],
@@ -207,7 +211,7 @@ export function FormularioNuevaVenta() {
                 key={modo}
                 type="button"
                 onClick={() => setModoPago(modo)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-lg border px-2 py-2 text-center text-sm font-medium transition sm:px-4 ${
                   modoPago === modo
                     ? 'border-red-700 bg-red-50 text-red-700'
                     : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
@@ -220,7 +224,7 @@ export function FormularioNuevaVenta() {
         </div>
 
         {modoPago !== 'CONTADO' && (
-          <div className="grid grid-cols-2 gap-4 rounded-lg bg-amber-50 p-4">
+          <div className="grid grid-cols-1 gap-4 rounded-lg bg-amber-50 p-4 sm:grid-cols-2">
             <div>
               <label className="etiqueta" htmlFor="cliente">¿Quién es el cliente?</label>
               <select
@@ -288,8 +292,10 @@ export function FormularioNuevaVenta() {
 
         <AvisoError mensaje={error} />
 
-        <div className="flex justify-end gap-2">
-          <Link to="/ventas" className="boton-secundario">Cancelar</Link>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Link to="/ventas" className="boton-secundario text-center">
+            Cancelar
+          </Link>
           <button
             type="submit"
             className="boton-primario"

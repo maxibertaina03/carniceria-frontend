@@ -49,9 +49,37 @@ export function ListaProductos() {
     }
   }
 
+  function accionesDe(producto: Producto) {
+    return (
+      <>
+        <button
+          className="mr-3 text-sm font-medium text-blue-700 hover:underline"
+          onClick={() => abrirEdicion(producto)}
+        >
+          Editar
+        </button>
+        {producto.activo ? (
+          <button
+            className="text-sm font-medium text-red-600 hover:underline"
+            onClick={() => manejarDesactivar(producto)}
+          >
+            Desactivar
+          </button>
+        ) : (
+          <button
+            className="text-sm font-medium text-green-700 hover:underline"
+            onClick={() => manejarReactivar(producto)}
+          >
+            Reactivar
+          </button>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-2xl font-bold">Productos y stock</h2>
         <button className="boton-primario" onClick={abrirNuevo}>
           + Nuevo producto
@@ -69,8 +97,59 @@ export function ListaProductos() {
 
       <EstadoConsulta cargando={isLoading} error={error} />
 
-      {productos && (
-        <div className="tarjeta overflow-x-auto p-0">
+      {productos && productos.length === 0 && (
+        <p className="tarjeta py-8 text-center text-gray-500">
+          Todavía no hay productos. Creá el primero con el botón de arriba.
+        </p>
+      )}
+
+      {/* Tarjetas apiladas: celular */}
+      {productos && productos.length > 0 && (
+        <div className="space-y-2 md:hidden">
+          {productos.map((producto) => (
+            <div
+              key={producto.id}
+              className={`tarjeta ${producto.activo ? '' : 'opacity-60'}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-semibold">
+                    {producto.nombre}
+                    {!producto.activo && (
+                      <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-normal">
+                        desactivado
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                  </p>
+                </div>
+                <p
+                  className={`text-right font-semibold ${
+                    producto.stockActual <= 0 && producto.activo
+                      ? 'text-red-600'
+                      : ''
+                  }`}
+                >
+                  {formatearCantidad(producto.stockActual, producto.unidadMedida)}
+                </p>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-2">
+                <p className="text-sm text-gray-600">
+                  Costo {formatearMoneda(producto.costoUnitarioReferencia)} · Venta{' '}
+                  {formatearMoneda(producto.precioVentaReferencia)}
+                </p>
+                <div>{accionesDe(producto)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tabla: pantallas medianas y grandes */}
+      {productos && productos.length > 0 && (
+        <div className="tarjeta hidden overflow-x-auto p-0 md:block">
           <table className="w-full">
             <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
@@ -116,38 +195,9 @@ export function ListaProductos() {
                   <td className="celda">
                     {formatearMoneda(producto.precioVentaReferencia)}
                   </td>
-                  <td className="celda text-right">
-                    <button
-                      className="mr-2 text-sm font-medium text-blue-700 hover:underline"
-                      onClick={() => abrirEdicion(producto)}
-                    >
-                      Editar
-                    </button>
-                    {producto.activo ? (
-                      <button
-                        className="text-sm font-medium text-red-600 hover:underline"
-                        onClick={() => manejarDesactivar(producto)}
-                      >
-                        Desactivar
-                      </button>
-                    ) : (
-                      <button
-                        className="text-sm font-medium text-green-700 hover:underline"
-                        onClick={() => manejarReactivar(producto)}
-                      >
-                        Reactivar
-                      </button>
-                    )}
-                  </td>
+                  <td className="celda text-right">{accionesDe(producto)}</td>
                 </tr>
               ))}
-              {productos.length === 0 && (
-                <tr>
-                  <td className="celda py-8 text-center text-gray-500" colSpan={6}>
-                    Todavía no hay productos. Creá el primero con el botón de arriba.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>

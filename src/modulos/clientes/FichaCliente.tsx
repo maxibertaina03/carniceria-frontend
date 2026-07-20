@@ -49,7 +49,7 @@ export function FichaCliente() {
 
       {data && (
         <>
-          <div className="mb-6 mt-2 flex items-start justify-between">
+          <div className="mb-6 mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">{data.cliente.nombre}</h2>
               <p className="text-gray-500">
@@ -63,7 +63,7 @@ export function FichaCliente() {
                 </button>
               </p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <p className="text-sm text-gray-500">Debe</p>
               <p
                 className={`text-3xl font-black ${
@@ -74,7 +74,7 @@ export function FichaCliente() {
               </p>
               {data.cliente.saldoDeudor > 0 && (
                 <button
-                  className="boton-primario mt-2"
+                  className="boton-primario mt-2 w-full sm:w-auto"
                   onClick={() => setModalPagoAbierto(true)}
                 >
                   Registrar pago
@@ -90,7 +90,7 @@ export function FichaCliente() {
                 <tr>
                   <th className="encabezado-tabla">Fecha</th>
                   <th className="encabezado-tabla">Movimiento</th>
-                  <th className="encabezado-tabla">Detalle</th>
+                  <th className="encabezado-tabla hidden sm:table-cell">Detalle</th>
                   <th className="encabezado-tabla text-right">Monto</th>
                 </tr>
               </thead>
@@ -109,7 +109,7 @@ export function FichaCliente() {
                         </span>
                       )}
                     </td>
-                    <td className="celda text-gray-600">
+                    <td className="celda hidden text-gray-600 sm:table-cell">
                       {movimiento.observaciones ?? '—'}
                     </td>
                     <td
