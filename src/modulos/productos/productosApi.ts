@@ -8,6 +8,7 @@ export interface Producto {
   stockActual: number;
   costoUnitarioReferencia: number;
   precioVentaReferencia: number;
+  seVende: boolean;
   activo: boolean;
   fechaCreacion: string;
 }
@@ -18,6 +19,7 @@ export interface DatosProducto {
   unidadMedida?: string;
   costoUnitarioReferencia?: number;
   precioVentaReferencia?: number;
+  seVende?: boolean;
 }
 
 export const productosApi = {

@@ -8,11 +8,18 @@ export function formatearMoneda(monto: number): string {
   return formatoMoneda.format(monto);
 }
 
+const ABREVIATURA_UNIDAD: Record<string, string> = {
+  KG: 'kg',
+  GRAMO: 'g',
+  METRO: 'm',
+  UNIDAD: 'u.',
+};
+
 export function formatearCantidad(cantidad: number, unidad: string): string {
   const numero = new Intl.NumberFormat('es-AR', {
     maximumFractionDigits: 3,
   }).format(cantidad);
-  return `${numero} ${unidad === 'KG' ? 'kg' : 'u.'}`;
+  return `${numero} ${ABREVIATURA_UNIDAD[unidad] ?? unidad.toLowerCase()}`;
 }
 
 export function formatearFecha(fecha: string | Date): string {
@@ -38,6 +45,7 @@ export const NOMBRES_CATEGORIA: Record<string, string> = {
   CERDO: 'Cerdo',
   AVE: 'Ave',
   CHACINADOS: 'Chacinados',
+  INSUMOS: 'Insumos',
   OTROS: 'Otros',
 };
 

@@ -29,6 +29,7 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
       unidadMedida: String(formulario.get('unidadMedida') ?? 'KG'),
       costoUnitarioReferencia: Number(formulario.get('costo') ?? 0),
       precioVentaReferencia: Number(formulario.get('precio') ?? 0),
+      seVende: formulario.get('seVende') === 'on',
     };
     try {
       if (producto) {
@@ -76,15 +77,17 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             </select>
           </div>
           <div>
-            <label className="etiqueta" htmlFor="unidadMedida">Se vende por</label>
+            <label className="etiqueta" htmlFor="unidadMedida">Se mide en</label>
             <select
               id="unidadMedida"
               name="unidadMedida"
               className="campo"
               defaultValue={producto?.unidadMedida ?? 'KG'}
             >
-              <option value="KG">Kilo (kg)</option>
-              <option value="UNIDAD">Unidad</option>
+              <option value="KG">Kilos (kg)</option>
+              <option value="GRAMO">Gramos (g)</option>
+              <option value="METRO">Metros (m)</option>
+              <option value="UNIDAD">Unidades</option>
             </select>
           </div>
         </div>
@@ -115,6 +118,22 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             />
           </div>
         </div>
+
+        <label className="flex items-start gap-2 rounded-lg bg-gray-50 p-3">
+          <input
+            type="checkbox"
+            name="seVende"
+            className="mt-1"
+            defaultChecked={producto?.seVende ?? true}
+          />
+          <span className="text-sm text-gray-700">
+            <span className="font-medium">Se vende al mostrador</span>
+            <br />
+            Destildá esto si es un insumo (sal, pimienta, tripa) o una carne
+            intermedia que solo se usa para producir. No aparecerá en la pantalla
+            de Ventas.
+          </span>
+        </label>
 
         <AvisoError mensaje={error} />
 

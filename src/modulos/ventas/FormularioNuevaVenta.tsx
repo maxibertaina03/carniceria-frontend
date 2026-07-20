@@ -20,9 +20,13 @@ const lineaVacia: LineaVenta = { productoId: '', cantidad: '', precioUnitarioVen
 
 export function FormularioNuevaVenta() {
   const navegar = useNavigate();
-  const { data: productos } = useProductos();
+  const { data: todosLosProductos } = useProductos();
   const { data: clientes } = useClientes();
   const registrarVenta = useRegistrarVenta();
+
+  // En Ventas solo se ofrecen los productos que se venden al mostrador
+  // (se ocultan insumos y cortes intermedios de producción).
+  const productos = todosLosProductos?.filter((producto) => producto.seVende);
 
   const [lineas, setLineas] = useState<LineaVenta[]>([{ ...lineaVacia }]);
   const [modoPago, setModoPago] = useState<ModoPago>('CONTADO');
