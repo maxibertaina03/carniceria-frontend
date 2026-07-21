@@ -44,6 +44,14 @@ export const clientesApi = {
     return data;
   },
 
+  async desactivar(id: string): Promise<void> {
+    await clienteHttp.delete(`/clientes/${id}`);
+  },
+
+  async eliminarDefinitivo(id: string): Promise<void> {
+    await clienteHttp.delete(`/clientes/${id}/definitivo`);
+  },
+
   async obtenerMovimientos(
     id: string,
   ): Promise<{ cliente: Cliente; movimientos: MovimientoCuenta[] }> {

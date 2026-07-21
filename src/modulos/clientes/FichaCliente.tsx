@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
@@ -13,12 +13,51 @@ import { useMovimientosCliente, useMutacionesCliente } from './useClientes';
 
 export function FichaCliente() {
   const { id } = useParams<{ id: string }>();
+  const navegar = useNavigate();
   const { data, isLoading, error, refetch } = useMovimientosCliente(id!);
-  const { registrarPago } = useMutacionesCliente();
+  const { registrarPago, desactivar, actualizar, eliminarDefinitivo } =
+    useMutacionesCliente();
 
   const [modalPagoAbierto, setModalPagoAbierto] = useState(false);
   const [modalEdicionAbierto, setModalEdicionAbierto] = useState(false);
   const [errorPago, setErrorPago] = useState<string | null>(null);
+
+  async function manejarDesactivar() {
+    if (!window.confirm('¿Desactivar este cliente? Deja de aparecer en la lista.')) {
+      return;
+    }
+    try {
+      await desactivar.mutateAsync(id!);
+      await refetch();
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
+
+  async function manejarReactivar() {
+    try {
+      await actualizar.mutateAsync({ id: id!, datos: { activo: true } });
+      await refetch();
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
+
+  async function manejarEliminar() {
+    if (
+      !window.confirm(
+        '¿Borrar definitivamente este cliente? Solo se puede si no tiene ventas ni movimientos.',
+      )
+    ) {
+      return;
+    }
+    try {
+      await eliminarDefinitivo.mutateAsync(id!);
+      navegar('/clientes');
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
 
   async function manejarPago(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -62,6 +101,29 @@ export function FichaCliente() {
                   Editar datos
                 </button>
               </p>
+              <div className="mt-2 flex flex-wrap gap-3 text-sm">
+                {data.cliente.activo ? (
+                  <button
+                    className="font-medium text-gray-600 hover:underline"
+                    onClick={manejarDesactivar}
+                  >
+                    Desactivar
+                  </button>
+                ) : (
+                  <button
+                    className="font-medium text-green-700 hover:underline"
+                    onClick={manejarReactivar}
+                  >
+                    Reactivar
+                  </button>
+                )}
+                <button
+                  className="font-medium text-red-600 hover:underline"
+                  onClick={manejarEliminar}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
             <div className="sm:text-right">
               <p className="text-sm text-gray-500">Debe</p>

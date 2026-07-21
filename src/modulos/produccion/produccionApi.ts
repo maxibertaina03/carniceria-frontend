@@ -72,4 +72,8 @@ export const produccionApi = {
     const { data } = await clienteHttp.post('/produccion', datos);
     return data;
   },
+
+  async eliminarOrden(id: string): Promise<void> {
+    await clienteHttp.delete(`/produccion/${id}`);
+  },
 };

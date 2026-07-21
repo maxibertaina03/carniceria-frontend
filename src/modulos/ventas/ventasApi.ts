@@ -42,4 +42,8 @@ export const ventasApi = {
     const { data } = await clienteHttp.post('/ventas', datos);
     return data;
   },
+
+  async eliminar(id: string): Promise<void> {
+    await clienteHttp.delete(`/ventas/${id}`);
+  },
 };

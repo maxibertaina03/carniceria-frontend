@@ -26,6 +26,7 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
     const datos = {
       nombre: String(formulario.get('nombre') ?? ''),
       categoria: String(formulario.get('categoria') ?? 'OTROS'),
+      subcategoria: String(formulario.get('subcategoria') ?? ''),
       unidadMedida: String(formulario.get('unidadMedida') ?? 'KG'),
       costoUnitarioReferencia: Number(formulario.get('costo') ?? 0),
       precioVentaReferencia: Number(formulario.get('precio') ?? 0),
@@ -90,6 +91,19 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
               <option value="UNIDAD">Unidades</option>
             </select>
           </div>
+        </div>
+
+        <div>
+          <label className="etiqueta" htmlFor="subcategoria">
+            Subcategoría (opcional)
+          </label>
+          <input
+            id="subcategoria"
+            name="subcategoria"
+            className="campo"
+            defaultValue={producto?.subcategoria ?? ''}
+            placeholder="Ej: Cerdo, Vaca, Pollo (para milanesas y hamburguesas)"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">

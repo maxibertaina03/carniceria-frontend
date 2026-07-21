@@ -4,6 +4,7 @@ export interface Producto {
   id: string;
   nombre: string;
   categoria: string;
+  subcategoria: string | null;
   unidadMedida: string;
   stockActual: number;
   costoUnitarioReferencia: number;
@@ -16,6 +17,7 @@ export interface Producto {
 export interface DatosProducto {
   nombre: string;
   categoria: string;
+  subcategoria?: string;
   unidadMedida?: string;
   costoUnitarioReferencia?: number;
   precioVentaReferencia?: number;

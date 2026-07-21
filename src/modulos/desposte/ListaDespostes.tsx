@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import {
   formatearCantidad,
@@ -7,7 +8,7 @@ import {
   formatearMoneda,
 } from '../../compartido/formato';
 import { Desposte } from './desposteApi';
-import { useDespostes } from './useDesposte';
+import { useDespostes, useEliminarDesposte } from './useDesposte';
 
 function DetalleDesposte({ desposte }: { desposte: Desposte }) {
   return (
@@ -30,7 +31,23 @@ function DetalleDesposte({ desposte }: { desposte: Desposte }) {
 
 export function ListaDespostes() {
   const { data: despostes, isLoading, error } = useDespostes();
+  const eliminar = useEliminarDesposte();
   const [abierto, setAbierto] = useState<string | null>(null);
+
+  async function manejarEliminar(desposte: Desposte) {
+    if (
+      !window.confirm(
+        '¿Eliminar este desposte? Se va a descontar del stock los cortes que había sumado.',
+      )
+    ) {
+      return;
+    }
+    try {
+      await eliminar.mutateAsync(desposte.id);
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -77,6 +94,12 @@ export function ListaDespostes() {
                     }
                   >
                     {abierto === desposte.id ? 'Ocultar' : 'Ver cortes'}
+                  </button>
+                  <button
+                    className="ml-3 text-sm font-medium text-red-600 hover:underline"
+                    onClick={() => manejarEliminar(desposte)}
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>

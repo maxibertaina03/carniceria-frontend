@@ -10,6 +10,7 @@ import { FormularioProducir } from './FormularioProducir';
 import { FormularioReceta } from './FormularioReceta';
 import { Receta } from './produccionApi';
 import {
+  useEliminarOrden,
   useMutacionesReceta,
   useOrdenesProduccion,
   useRecetas,
@@ -161,7 +162,23 @@ function SeccionRecetas() {
 
 function SeccionOrdenes() {
   const { data: ordenes, isLoading, error } = useOrdenesProduccion();
+  const eliminar = useEliminarOrden();
   const [abierta, setAbierta] = useState<string | null>(null);
+
+  async function manejarEliminar(id: string) {
+    if (
+      !window.confirm(
+        '¿Eliminar esta producción? Se devuelven los ingredientes al stock y se quita el producto terminado.',
+      )
+    ) {
+      return;
+    }
+    try {
+      await eliminar.mutateAsync(id);
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
 
   return (
     <div>
@@ -193,12 +210,20 @@ function SeccionOrdenes() {
                 </p>
               </div>
             </div>
-            <button
-              className="mt-2 text-sm font-medium text-blue-700 hover:underline"
-              onClick={() => setAbierta(abierta === orden.id ? null : orden.id)}
-            >
-              {abierta === orden.id ? 'Ocultar' : 'Ver ingredientes usados'}
-            </button>
+            <div className="mt-2 flex gap-3">
+              <button
+                className="text-sm font-medium text-blue-700 hover:underline"
+                onClick={() => setAbierta(abierta === orden.id ? null : orden.id)}
+              >
+                {abierta === orden.id ? 'Ocultar' : 'Ver ingredientes usados'}
+              </button>
+              <button
+                className="text-sm font-medium text-red-600 hover:underline"
+                onClick={() => manejarEliminar(orden.id)}
+              >
+                Eliminar
+              </button>
+            </div>
             {abierta === orden.id && (
               <ul className="mt-2 space-y-1 rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
                 {orden.items.map((item) => (

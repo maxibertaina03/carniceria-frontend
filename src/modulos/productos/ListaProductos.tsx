@@ -123,6 +123,7 @@ export function ListaProductos() {
                   </p>
                   <p className="text-sm text-gray-500">
                     {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                    {producto.subcategoria ? ` · ${producto.subcategoria}` : ''}
                   </p>
                 </div>
                 <p
@@ -177,6 +178,7 @@ export function ListaProductos() {
                   </td>
                   <td className="celda">
                     {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                    {producto.subcategoria ? ` · ${producto.subcategoria}` : ''}
                   </td>
                   <td className="celda">
                     <span

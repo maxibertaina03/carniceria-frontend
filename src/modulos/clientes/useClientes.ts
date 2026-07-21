@@ -50,5 +50,15 @@ export function useMutacionesCliente() {
     onSuccess: invalidar,
   });
 
-  return { crear, actualizar, registrarPago };
+  const desactivar = useMutation({
+    mutationFn: (id: string) => clientesApi.desactivar(id),
+    onSuccess: invalidar,
+  });
+
+  const eliminarDefinitivo = useMutation({
+    mutationFn: (id: string) => clientesApi.eliminarDefinitivo(id),
+    onSuccess: invalidar,
+  });
+
+  return { crear, actualizar, registrarPago, desactivar, eliminarDefinitivo };
 }

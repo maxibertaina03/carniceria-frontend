@@ -38,4 +38,8 @@ export const desposteApi = {
     const { data } = await clienteHttp.post('/despostes', datos);
     return data;
   },
+
+  async eliminar(id: string): Promise<void> {
+    await clienteHttp.delete(`/despostes/${id}`);
+  },
 };

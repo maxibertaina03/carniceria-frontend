@@ -1,5 +1,6 @@
 import { Fragment, ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import {
   formatearCantidad,
@@ -7,7 +8,7 @@ import {
   formatearMoneda,
 } from '../../compartido/formato';
 import { Compra } from './comprasApi';
-import { useCompras } from './useCompras';
+import { useCompras, useEliminarCompra } from './useCompras';
 
 function DetalleCompra({ compra }: { compra: Compra }) {
   return (
@@ -28,18 +29,42 @@ function DetalleCompra({ compra }: { compra: Compra }) {
 
 export function ListaCompras() {
   const { data: compras, isLoading, error } = useCompras();
+  const eliminar = useEliminarCompra();
   const [compraAbierta, setCompraAbierta] = useState<string | null>(null);
 
-  function botonDetalle(compra: Compra): ReactNode {
+  async function manejarEliminar(compra: Compra) {
+    if (
+      !window.confirm(
+        '¿Eliminar esta compra? Se va a descontar del stock lo que había sumado.',
+      )
+    ) {
+      return;
+    }
+    try {
+      await eliminar.mutateAsync(compra.id);
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
+
+  function acciones(compra: Compra): ReactNode {
     return (
-      <button
-        className="text-sm font-medium text-blue-700 hover:underline"
-        onClick={() =>
-          setCompraAbierta(compraAbierta === compra.id ? null : compra.id)
-        }
-      >
-        {compraAbierta === compra.id ? 'Ocultar' : 'Ver detalle'}
-      </button>
+      <>
+        <button
+          className="text-sm font-medium text-blue-700 hover:underline"
+          onClick={() =>
+            setCompraAbierta(compraAbierta === compra.id ? null : compra.id)
+          }
+        >
+          {compraAbierta === compra.id ? 'Ocultar' : 'Ver detalle'}
+        </button>
+        <button
+          className="ml-3 text-sm font-medium text-red-600 hover:underline"
+          onClick={() => manejarEliminar(compra)}
+        >
+          Eliminar
+        </button>
+      </>
     );
   }
 
@@ -76,7 +101,7 @@ export function ListaCompras() {
                 <p className="font-semibold">{formatearMoneda(compra.total)}</p>
               </div>
               <div className="mt-2 border-t border-gray-100 pt-2 text-right">
-                {botonDetalle(compra)}
+                {acciones(compra)}
               </div>
               {compraAbierta === compra.id && (
                 <div className="mt-2 rounded-lg bg-gray-50 p-3">
@@ -111,7 +136,7 @@ export function ListaCompras() {
                     <td className="celda font-semibold">
                       {formatearMoneda(compra.total)}
                     </td>
-                    <td className="celda text-right">{botonDetalle(compra)}</td>
+                    <td className="celda text-right">{acciones(compra)}</td>
                   </tr>
                   {compraAbierta === compra.id && (
                     <tr>

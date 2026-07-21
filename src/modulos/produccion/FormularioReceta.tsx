@@ -2,6 +2,10 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
+import {
+  CATEGORIA_INSUMO,
+  CATEGORIAS_PRODUCIBLES,
+} from '../../compartido/formato';
 import { useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
 import { useMutacionesReceta } from './useProduccion';
@@ -40,6 +44,13 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
   );
 
   const terminado = productos?.find((p) => p.id === productoTerminadoId);
+
+  // El producto a producir solo puede ser de categorías producibles;
+  // los ingredientes solo insumos (incluye las carnes de producción).
+  const productosProducibles = productos?.filter((p) =>
+    CATEGORIAS_PRODUCIBLES.includes(p.categoria),
+  );
+  const insumos = productos?.filter((p) => p.categoria === CATEGORIA_INSUMO);
 
   function unidadDe(productoId: string): string {
     return productos?.find((p) => p.id === productoId)?.unidadMedida ?? '';
@@ -101,12 +112,18 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
               onChange={(evento) => setProductoTerminadoId(evento.target.value)}
             >
               <option value="">Elegir producto…</option>
-              {productos?.map((producto) => (
+              {productosProducibles?.map((producto) => (
                 <option key={producto.id} value={producto.id}>
                   {producto.nombre}
+                  {producto.subcategoria ? ` (${producto.subcategoria})` : ''}
                 </option>
               ))}
             </select>
+          )}
+          {!editando && (
+            <p className="mt-1 text-xs text-gray-500">
+              Se producen chacinados, milanesas y hamburguesas.
+            </p>
           )}
         </div>
 
@@ -143,13 +160,11 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
                   }
                 >
                   <option value="">Elegir ingrediente…</option>
-                  {productos
-                    ?.filter((p) => p.id !== productoTerminadoId)
-                    .map((producto) => (
-                      <option key={producto.id} value={producto.id}>
-                        {producto.nombre}
-                      </option>
-                    ))}
+                  {insumos?.map((producto) => (
+                    <option key={producto.id} value={producto.id}>
+                      {producto.nombre}
+                    </option>
+                  ))}
                 </select>
                 <div className="flex w-28 shrink-0 items-center gap-1">
                   <input

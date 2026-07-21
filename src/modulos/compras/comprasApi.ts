@@ -34,4 +34,8 @@ export const comprasApi = {
     const { data } = await clienteHttp.post('/compras', datos);
     return data;
   },
+
+  async eliminar(id: string): Promise<void> {
+    await clienteHttp.delete(`/compras/${id}`);
+  },
 };

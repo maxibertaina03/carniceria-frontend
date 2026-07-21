@@ -30,15 +30,25 @@ export function useMutacionesReceta() {
   return { guardar, eliminar };
 }
 
+// Producir (o borrar una producción) mueve el stock de ingredientes y terminado.
+function invalidarProduccion(cliente: ReturnType<typeof useQueryClient>) {
+  cliente.invalidateQueries({ queryKey: ['ordenes-produccion'] });
+  cliente.invalidateQueries({ queryKey: ['productos'] });
+  cliente.invalidateQueries({ queryKey: ['reportes'] });
+}
+
 export function useProducir() {
   const cliente = useQueryClient();
   return useMutation({
     mutationFn: (datos: DatosProducir) => produccionApi.producir(datos),
-    onSuccess: () => {
-      // Producir descuenta ingredientes y suma el terminado al stock.
-      cliente.invalidateQueries({ queryKey: ['ordenes-produccion'] });
-      cliente.invalidateQueries({ queryKey: ['productos'] });
-      cliente.invalidateQueries({ queryKey: ['reportes'] });
-    },
+    onSuccess: () => invalidarProduccion(cliente),
+  });
+}
+
+export function useEliminarOrden() {
+  const cliente = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => produccionApi.eliminarOrden(id),
+    onSuccess: () => invalidarProduccion(cliente),
   });
 }

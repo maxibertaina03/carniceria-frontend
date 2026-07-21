@@ -1,5 +1,6 @@
 import { Fragment, ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import {
   formatearCantidad,
@@ -7,7 +8,7 @@ import {
   formatearMoneda,
   NOMBRES_FORMA_PAGO,
 } from '../../compartido/formato';
-import { useVentas } from './useVentas';
+import { useEliminarVenta, useVentas } from './useVentas';
 import { Venta } from './ventasApi';
 
 const colorFormaPago: Record<string, string> = {
@@ -56,16 +57,40 @@ function DetalleVenta({ venta }: { venta: Venta }) {
 
 export function ListaVentas() {
   const { data: ventas, isLoading, error } = useVentas();
+  const eliminar = useEliminarVenta();
   const [ventaAbierta, setVentaAbierta] = useState<string | null>(null);
 
-  function botonDetalle(venta: Venta): ReactNode {
+  async function manejarEliminar(venta: Venta) {
+    const aviso =
+      venta.montoFiado > 0
+        ? '¿Eliminar esta venta? Se devuelve el stock y se le quita la deuda al cliente.'
+        : '¿Eliminar esta venta? Se devuelve el stock de los productos.';
+    if (!window.confirm(aviso)) {
+      return;
+    }
+    try {
+      await eliminar.mutateAsync(venta.id);
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
+    }
+  }
+
+  function acciones(venta: Venta): ReactNode {
     return (
-      <button
-        className="text-sm font-medium text-blue-700 hover:underline"
-        onClick={() => setVentaAbierta(ventaAbierta === venta.id ? null : venta.id)}
-      >
-        {ventaAbierta === venta.id ? 'Ocultar' : 'Ver detalle'}
-      </button>
+      <>
+        <button
+          className="text-sm font-medium text-blue-700 hover:underline"
+          onClick={() => setVentaAbierta(ventaAbierta === venta.id ? null : venta.id)}
+        >
+          {ventaAbierta === venta.id ? 'Ocultar' : 'Ver detalle'}
+        </button>
+        <button
+          className="ml-3 text-sm font-medium text-red-600 hover:underline"
+          onClick={() => manejarEliminar(venta)}
+        >
+          Eliminar
+        </button>
+      </>
     );
   }
 
@@ -113,7 +138,7 @@ export function ListaVentas() {
                     (gana {formatearMoneda(venta.gananciaTotal)})
                   </span>
                 </p>
-                {botonDetalle(venta)}
+                {acciones(venta)}
               </div>
               {ventaAbierta === venta.id && (
                 <div className="mt-2 rounded-lg bg-gray-50 p-3">
@@ -160,7 +185,7 @@ export function ListaVentas() {
                     >
                       {formatearMoneda(venta.gananciaTotal)}
                     </td>
-                    <td className="celda text-right">{botonDetalle(venta)}</td>
+                    <td className="celda text-right">{acciones(venta)}</td>
                   </tr>
                   {ventaAbierta === venta.id && (
                     <tr>
