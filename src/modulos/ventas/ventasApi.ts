@@ -4,6 +4,7 @@ export interface ItemVenta {
   id: string;
   productoId: string;
   productoNombre: string;
+  unidadMedida: string;
   cantidad: number;
   precioUnitarioVenta: number;
   costoUnitario: number;

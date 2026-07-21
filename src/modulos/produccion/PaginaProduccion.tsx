@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import {
+  abreviarUnidad,
   formatearCantidad,
   formatearFechaYHora,
   formatearMargen,
@@ -200,21 +201,29 @@ function SeccionRecetas() {
         })}
       </div>
 
-      <FormularioReceta
-        abierto={modalRecetaAbierto}
-        alCerrar={() => setModalRecetaAbierto(false)}
-        receta={recetaEnEdicion}
-      />
-      <FormularioProducir
-        abierto={recetaAProducir !== null}
-        alCerrar={() => setRecetaAProducir(null)}
-        receta={recetaAProducir}
-      />
-      <ModalPreciosReceta
-        abierto={recetaPrecios !== null}
-        alCerrar={() => setRecetaPrecios(null)}
-        receta={recetaPrecios}
-      />
+      {/* Se montan recién al abrirse: así cada vez arrancan con los datos de
+          la receta elegida y no arrastran lo cargado en la anterior. */}
+      {modalRecetaAbierto && (
+        <FormularioReceta
+          abierto
+          alCerrar={() => setModalRecetaAbierto(false)}
+          receta={recetaEnEdicion}
+        />
+      )}
+      {recetaAProducir && (
+        <FormularioProducir
+          abierto
+          alCerrar={() => setRecetaAProducir(null)}
+          receta={recetaAProducir}
+        />
+      )}
+      {recetaPrecios && (
+        <ModalPreciosReceta
+          abierto
+          alCerrar={() => setRecetaPrecios(null)}
+          receta={recetaPrecios}
+        />
+      )}
     </div>
   );
 }
@@ -255,7 +264,7 @@ function SeccionOrdenes() {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <p className="font-semibold">
-                  {formatearCantidad(orden.cantidadProducida, 'KG')} de{' '}
+                  {formatearCantidad(orden.cantidadProducida, orden.productoTerminadoUnidad)} de{' '}
                   {orden.productoTerminadoNombre}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -265,7 +274,7 @@ function SeccionOrdenes() {
               <div className="text-right">
                 <p className="font-semibold">{formatearMoneda(orden.costoTotal)}</p>
                 <p className="text-sm text-gray-500">
-                  {formatearMoneda(orden.costoUnitario)}/u.
+                  {formatearMoneda(orden.costoUnitario)}/{abreviarUnidad(orden.productoTerminadoUnidad)}
                 </p>
               </div>
             </div>
@@ -288,7 +297,7 @@ function SeccionOrdenes() {
                 {orden.items.map((item) => (
                   <li key={item.productoId} className="flex justify-between">
                     <span>
-                      {item.productoNombre}: {formatearCantidad(item.cantidad, 'KG')}
+                      {item.productoNombre}: {formatearCantidad(item.cantidad, item.unidadMedida)}
                     </span>
                     <span>{formatearMoneda(item.subtotal)}</span>
                   </li>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import {
+  abreviarUnidad,
   formatearCantidad,
   formatearFecha,
   formatearMoneda,
@@ -15,8 +16,8 @@ function DetalleDesposte({ desposte }: { desposte: Desposte }) {
     <ul className="space-y-1 text-sm text-gray-700">
       {desposte.cortes.map((corte) => (
         <li key={corte.id}>
-          {corte.productoNombre} — {formatearCantidad(corte.cantidad, 'KG')} ·{' '}
-          costo <strong>{formatearMoneda(corte.costoUnitario)}/kg</strong>{' '}
+          {corte.productoNombre} — {formatearCantidad(corte.cantidad, corte.unidadMedida)} ·{' '}
+          costo <strong>{formatearMoneda(corte.costoUnitario)}/{abreviarUnidad(corte.unidadMedida)}</strong>{' '}
           <span className="text-gray-500">
             ({formatearMoneda(corte.subtotal)})
           </span>

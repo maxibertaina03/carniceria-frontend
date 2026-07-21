@@ -4,6 +4,7 @@ export interface CorteDesposte {
   id: string;
   productoId: string;
   productoNombre: string;
+  unidadMedida: string;
   cantidad: number;
   valorReferencia: number;
   costoUnitario: number;

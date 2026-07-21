@@ -25,6 +25,7 @@ export interface DatosReceta {
 export interface ItemProduccion {
   productoId: string;
   productoNombre: string;
+  unidadMedida: string;
   cantidad: number;
   costoUnitario: number;
   subtotal: number;
@@ -35,6 +36,7 @@ export interface OrdenProduccion {
   fecha: string;
   productoTerminadoId: string;
   productoTerminadoNombre: string;
+  productoTerminadoUnidad: string;
   cantidadProducida: number;
   costoTotal: number;
   costoUnitario: number;

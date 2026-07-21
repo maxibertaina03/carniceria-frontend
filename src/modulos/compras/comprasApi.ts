@@ -4,6 +4,7 @@ export interface ItemCompra {
   id: string;
   productoId: string;
   productoNombre: string;
+  unidadMedida: string;
   cantidad: number;
   costoUnitario: number;
   subtotal: number;

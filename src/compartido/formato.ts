@@ -15,6 +15,11 @@ const ABREVIATURA_UNIDAD: Record<string, string> = {
   UNIDAD: 'u.',
 };
 
+// Abreviatura corta de la unidad, para textos como "$1.200/kg".
+export function abreviarUnidad(unidad: string): string {
+  return ABREVIATURA_UNIDAD[unidad] ?? unidad.toLowerCase();
+}
+
 export function formatearCantidad(cantidad: number, unidad: string): string {
   const numero = new Intl.NumberFormat('es-AR', {
     maximumFractionDigits: 3,

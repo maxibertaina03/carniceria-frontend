@@ -15,7 +15,7 @@ function DetalleCompra({ compra }: { compra: Compra }) {
     <ul className="space-y-1 text-sm text-gray-700">
       {compra.items.map((item) => (
         <li key={item.id}>
-          {item.productoNombre} — {formatearCantidad(item.cantidad, 'KG')} ×{' '}
+          {item.productoNombre} — {formatearCantidad(item.cantidad, item.unidadMedida)} ×{' '}
           {formatearMoneda(item.costoUnitario)} ={' '}
           <strong>{formatearMoneda(item.subtotal)}</strong>
         </li>
