@@ -22,6 +22,15 @@ export function formatearCantidad(cantidad: number, unidad: string): string {
   return `${numero} ${ABREVIATURA_UNIDAD[unidad] ?? unidad.toLowerCase()}`;
 }
 
+// Porcentaje de margen sobre el precio de venta (ganancia / precio).
+export function formatearMargen(costo: number, precioVenta: number): string {
+  if (precioVenta <= 0) {
+    return '—';
+  }
+  const margen = ((precioVenta - costo) / precioVenta) * 100;
+  return `${margen.toFixed(0)}%`;
+}
+
 export function formatearFecha(fecha: string | Date): string {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',

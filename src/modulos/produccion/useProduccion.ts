@@ -52,3 +52,16 @@ export function useEliminarOrden() {
     onSuccess: () => invalidarProduccion(cliente),
   });
 }
+
+// Recalcula los costos de producción tras cambiar precios de insumos.
+export function useRecalcularCostos() {
+  const cliente = useQueryClient();
+  return useMutation({
+    mutationFn: () => produccionApi.recalcularCostos(),
+    onSuccess: () => {
+      cliente.invalidateQueries({ queryKey: ['productos'] });
+      cliente.invalidateQueries({ queryKey: ['recetas'] });
+      cliente.invalidateQueries({ queryKey: ['reportes'] });
+    },
+  });
+}

@@ -76,4 +76,9 @@ export const produccionApi = {
   async eliminarOrden(id: string): Promise<void> {
     await clienteHttp.delete(`/produccion/${id}`);
   },
+
+  // Recalcula el costo de los productos producidos según el precio de sus insumos.
+  async recalcularCostos(): Promise<void> {
+    await clienteHttp.post('/produccion/recalcular-costos');
+  },
 };

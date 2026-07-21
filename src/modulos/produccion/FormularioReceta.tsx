@@ -5,6 +5,7 @@ import { Modal } from '../../compartido/componentes/Modal';
 import {
   CATEGORIA_INSUMO,
   CATEGORIAS_PRODUCIBLES,
+  formatearMoneda,
 } from '../../compartido/formato';
 import { useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
@@ -51,6 +52,18 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
     CATEGORIAS_PRODUCIBLES.includes(p.categoria),
   );
   const insumos = productos?.filter((p) => p.categoria === CATEGORIA_INSUMO);
+
+  // Costo estimado por unidad producida, en vivo con los precios actuales.
+  const rindeNum = Number(rinde);
+  const costoEstimado =
+    rindeNum > 0 &&
+    ingredientes.some((linea) => linea.productoId && Number(linea.cantidad) > 0)
+      ? ingredientes.reduce((suma, linea) => {
+          const producto = productos?.find((p) => p.id === linea.productoId);
+          const cantidad = Number(linea.cantidad) || 0;
+          return suma + (producto?.costoUnitarioReferencia ?? 0) * cantidad;
+        }, 0) / rindeNum
+      : null;
 
   function unidadDe(productoId: string): string {
     return productos?.find((p) => p.id === productoId)?.unidadMedida ?? '';
@@ -218,6 +231,16 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
             + Agregar ingrediente
           </button>
         </div>
+
+        {costoEstimado !== null && (
+          <p className="rounded-lg bg-gray-50 p-3 text-right text-sm text-gray-600">
+            Costo estimado:{' '}
+            <strong className="text-gray-900">
+              {formatearMoneda(costoEstimado)}
+            </strong>{' '}
+            por {unidadDe(productoTerminadoId) === 'KG' ? 'kg' : 'unidad'} producido
+          </p>
+        )}
 
         <AvisoError mensaje={error} />
 
