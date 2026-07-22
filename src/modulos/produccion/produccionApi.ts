@@ -3,7 +3,10 @@ import { clienteHttp } from '../../compartido/clienteHttp';
 export interface IngredienteReceta {
   productoId: string;
   productoNombre: string;
-  unidadMedida: string;
+  // Unidad en la que está cargada la cantidad de la receta (ej. GRAMO).
+  unidad: string;
+  // Unidad en la que se compra/stockea el producto (ej. KG): su costo va en esa.
+  unidadProducto: string;
   cantidad: number;
 }
 
@@ -19,7 +22,7 @@ export interface Receta {
 export interface DatosReceta {
   productoTerminadoId: string;
   rindeCantidad: number;
-  ingredientes: { productoId: string; cantidad: number }[];
+  ingredientes: { productoId: string; cantidad: number; unidad: string }[];
 }
 
 export interface ItemProduccion {

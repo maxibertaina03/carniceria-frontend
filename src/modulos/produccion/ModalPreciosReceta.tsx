@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
-import { formatearCantidad } from '../../compartido/formato';
+import { abreviarUnidad, formatearCantidad } from '../../compartido/formato';
 import { useMutacionesProducto, useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
 import { useRecalcularCostos } from './useProduccion';
@@ -85,7 +85,7 @@ export function ModalPreciosReceta({ abierto, alCerrar, receta }: Props) {
                   {ingrediente.productoNombre}
                   <span className="text-gray-400">
                     {' '}
-                    (usa {formatearCantidad(ingrediente.cantidad, ingrediente.unidadMedida)})
+                    (usa {formatearCantidad(ingrediente.cantidad, ingrediente.unidad)})
                   </span>
                 </span>
                 <div className="flex items-center gap-1">
@@ -103,14 +103,10 @@ export function ModalPreciosReceta({ abierto, alCerrar, receta }: Props) {
                       }))
                     }
                   />
+                  {/* El precio del insumo va en la unidad en que se compra
+                      (ej. $/kg), aunque la receta lo use en gramos. */}
                   <span className="w-8 text-xs text-gray-400">
-                    /{ingrediente.unidadMedida === 'KG'
-                      ? 'kg'
-                      : ingrediente.unidadMedida === 'GRAMO'
-                        ? 'g'
-                        : ingrediente.unidadMedida === 'METRO'
-                          ? 'm'
-                          : 'u.'}
+                    /{abreviarUnidad(ingrediente.unidadProducto)}
                   </span>
                 </div>
               </div>

@@ -3,10 +3,12 @@ import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
 import {
+  abreviarUnidad,
   CATEGORIA_INSUMO,
   CATEGORIAS_PRODUCIBLES,
   formatearMoneda,
 } from '../../compartido/formato';
+import { convertirCantidad, unidadesCompatibles } from '../../compartido/unidades';
 import { useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
 import { useMutacionesReceta } from './useProduccion';
@@ -14,6 +16,8 @@ import { useMutacionesReceta } from './useProduccion';
 interface LineaIngrediente {
   productoId: string;
   cantidad: string;
+  // Unidad en la que se carga la cantidad (ej. gramos de una sal comprada por kg).
+  unidad: string;
 }
 
 interface Props {
@@ -40,8 +44,9 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
       ? receta.ingredientes.map((i) => ({
           productoId: i.productoId,
           cantidad: String(i.cantidad),
+          unidad: i.unidad,
         }))
-      : [{ productoId: '', cantidad: '' }],
+      : [{ productoId: '', cantidad: '', unidad: '' }],
   );
 
   const terminado = productos?.find((p) => p.id === productoTerminadoId);
@@ -53,26 +58,48 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
   );
   const insumos = productos?.filter((p) => p.categoria === CATEGORIA_INSUMO);
 
+  function unidadDe(productoId: string): string {
+    return productos?.find((p) => p.id === productoId)?.unidadMedida ?? '';
+  }
+
+  // Costo de una línea: la cantidad se convierte a la unidad del producto
+  // (ej. 28 g → 0,028 kg) y se multiplica por su precio (ej. $1.500 el kg).
+  function costoDeLinea(linea: LineaIngrediente): number | null {
+    const producto = productos?.find((p) => p.id === linea.productoId);
+    const cantidad = Number(linea.cantidad);
+    if (!producto || !(cantidad > 0) || !linea.unidad) {
+      return null;
+    }
+    const enUnidadProducto = convertirCantidad(
+      cantidad,
+      linea.unidad,
+      producto.unidadMedida,
+    );
+    return producto.costoUnitarioReferencia * enUnidadProducto;
+  }
+
   // Costo estimado por unidad producida, en vivo con los precios actuales.
   const rindeNum = Number(rinde);
   const costoEstimado =
     rindeNum > 0 &&
     ingredientes.some((linea) => linea.productoId && Number(linea.cantidad) > 0)
-      ? ingredientes.reduce((suma, linea) => {
-          const producto = productos?.find((p) => p.id === linea.productoId);
-          const cantidad = Number(linea.cantidad) || 0;
-          return suma + (producto?.costoUnitarioReferencia ?? 0) * cantidad;
-        }, 0) / rindeNum
+      ? ingredientes.reduce((suma, linea) => suma + (costoDeLinea(linea) ?? 0), 0) /
+        rindeNum
       : null;
-
-  function unidadDe(productoId: string): string {
-    return productos?.find((p) => p.id === productoId)?.unidadMedida ?? '';
-  }
 
   function cambiarIngrediente(indice: number, cambios: Partial<LineaIngrediente>) {
     setIngredientes((previas) =>
       previas.map((linea, i) => (i === indice ? { ...linea, ...cambios } : linea)),
     );
+  }
+
+  // Al elegir el ingrediente, se arranca con la unidad del propio producto
+  // (después se puede pasar a gramos si es algo que se usa de a poco).
+  function elegirIngrediente(indice: number, productoId: string) {
+    cambiarIngrediente(indice, {
+      productoId,
+      unidad: unidadDe(productoId),
+    });
   }
 
   async function manejarEnvio(evento: FormEvent) {
@@ -88,6 +115,7 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
       .map((linea) => ({
         productoId: linea.productoId,
         cantidad: Number(linea.cantidad),
+        unidad: linea.unidad || unidadDe(linea.productoId),
       }));
     if (ingredientesValidos.length === 0) {
       setError('Agregá al menos un ingrediente.');
@@ -163,69 +191,94 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
         <div>
           <span className="etiqueta">Ingredientes (por el rinde)</span>
           <div className="flex flex-col gap-2">
-            {ingredientes.map((linea, indice) => (
-              <div key={indice} className="flex items-center gap-2">
-                <select
-                  className="campo flex-1"
-                  value={linea.productoId}
-                  onChange={(evento) =>
-                    cambiarIngrediente(indice, { productoId: evento.target.value })
-                  }
+            {ingredientes.map((linea, indice) => {
+              const producto = productos?.find((p) => p.id === linea.productoId);
+              const costo = costoDeLinea(linea);
+              return (
+                <div
+                  key={indice}
+                  className="rounded-lg border border-gray-100 p-2 sm:border-0 sm:p-0"
                 >
-                  <option value="">Elegir ingrediente…</option>
-                  {insumos?.map((producto) => (
-                    <option key={producto.id} value={producto.id}>
-                      {producto.nombre}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex w-28 shrink-0 items-center gap-1">
-                  <input
-                    className="campo w-full"
-                    type="number"
-                    min="0.001"
-                    step="0.001"
-                    placeholder="Cant."
-                    value={linea.cantidad}
-                    onChange={(evento) =>
-                      cambiarIngrediente(indice, { cantidad: evento.target.value })
-                    }
-                    required={Boolean(linea.productoId)}
-                  />
-                  <span className="w-6 text-xs text-gray-400">
-                    {unidadDe(linea.productoId) === 'KG'
-                      ? 'kg'
-                      : unidadDe(linea.productoId) === 'GRAMO'
-                        ? 'g'
-                        : unidadDe(linea.productoId) === 'METRO'
-                          ? 'm'
-                          : unidadDe(linea.productoId) === 'UNIDAD'
-                            ? 'u.'
-                            : ''}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      className="campo sm:w-auto sm:flex-1"
+                      value={linea.productoId}
+                      onChange={(evento) =>
+                        elegirIngrediente(indice, evento.target.value)
+                      }
+                    >
+                      <option value="">Elegir ingrediente…</option>
+                      {insumos?.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      className="campo min-w-0 flex-1 sm:w-24 sm:flex-none"
+                      type="number"
+                      min="0.001"
+                      step="0.001"
+                      placeholder="Cant."
+                      value={linea.cantidad}
+                      onChange={(evento) =>
+                        cambiarIngrediente(indice, { cantidad: evento.target.value })
+                      }
+                      required={Boolean(linea.productoId)}
+                    />
+                    {/* Se puede cargar en otra unidad que la del producto:
+                        ej. gramos de una sal que se compra por kilo. */}
+                    <select
+                      className="campo w-20 shrink-0"
+                      value={linea.unidad}
+                      onChange={(evento) =>
+                        cambiarIngrediente(indice, { unidad: evento.target.value })
+                      }
+                      disabled={!linea.productoId}
+                    >
+                      {(producto
+                        ? unidadesCompatibles(producto.unidadMedida)
+                        : []
+                      ).map((unidad) => (
+                        <option key={unidad} value={unidad}>
+                          {abreviarUnidad(unidad)}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                      onClick={() =>
+                        setIngredientes((previas) =>
+                          previas.length > 1
+                            ? previas.filter((_, i) => i !== indice)
+                            : [{ productoId: '', cantidad: '', unidad: '' }],
+                        )
+                      }
+                      aria-label="Quitar ingrediente"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {producto && costo !== null && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      {formatearMoneda(producto.costoUnitarioReferencia)}/
+                      {abreviarUnidad(producto.unidadMedida)} → esta línea cuesta{' '}
+                      <strong className="text-gray-700">{formatearMoneda(costo)}</strong>
+                    </p>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600"
-                  onClick={() =>
-                    setIngredientes((previas) =>
-                      previas.length > 1
-                        ? previas.filter((_, i) => i !== indice)
-                        : [{ productoId: '', cantidad: '' }],
-                    )
-                  }
-                  aria-label="Quitar ingrediente"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <button
             type="button"
             className="mt-2 text-sm font-medium text-blue-700 hover:underline"
             onClick={() =>
-              setIngredientes((previas) => [...previas, { productoId: '', cantidad: '' }])
+              setIngredientes((previas) => [
+                ...previas,
+                { productoId: '', cantidad: '', unidad: '' },
+              ])
             }
           >
             + Agregar ingrediente
