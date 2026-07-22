@@ -31,6 +31,8 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
       costoUnitarioReferencia: Number(formulario.get('costo') ?? 0),
       precioVentaReferencia: Number(formulario.get('precio') ?? 0),
       seVende: formulario.get('seVende') === 'on',
+      // Solo al dar de alta: cuánto hay hoy de este producto.
+      ...(producto ? {} : { stockInicial: Number(formulario.get('stockInicial') ?? 0) }),
     };
     try {
       if (producto) {
@@ -132,6 +134,27 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             />
           </div>
         </div>
+
+        {!editando && (
+          <div>
+            <label className="etiqueta" htmlFor="stockInicial">
+              ¿Cuánto tenés hoy? (stock inicial)
+            </label>
+            <input
+              id="stockInicial"
+              name="stockInicial"
+              className="campo"
+              type="number"
+              min="0"
+              step="0.001"
+              defaultValue={0}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Si ya tenés mercadería de este producto, cargala acá. Si no, dejá 0
+              y el stock va a entrar con la primera compra.
+            </p>
+          </div>
+        )}
 
         <label className="flex items-start gap-2 rounded-lg bg-gray-50 p-3">
           <input

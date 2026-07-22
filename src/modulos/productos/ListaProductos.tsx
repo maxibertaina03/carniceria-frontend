@@ -7,6 +7,7 @@ import {
   NOMBRES_CATEGORIA,
 } from '../../compartido/formato';
 import { FormularioProducto } from './FormularioProducto';
+import { ModalAjustarStock } from './ModalAjustarStock';
 import { Producto } from './productosApi';
 import { useMutacionesProducto, useProductos } from './useProductos';
 
@@ -16,6 +17,7 @@ export function ListaProductos() {
   const { desactivar, actualizar } = useMutacionesProducto();
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
+  const [productoAAjustar, setProductoAAjustar] = useState<Producto | null>(null);
 
   function abrirNuevo() {
     setProductoEnEdicion(null);
@@ -52,6 +54,12 @@ export function ListaProductos() {
   function accionesDe(producto: Producto) {
     return (
       <>
+        <button
+          className="mr-3 text-sm font-medium text-blue-700 hover:underline"
+          onClick={() => setProductoAAjustar(producto)}
+        >
+          Ajustar stock
+        </button>
         <button
           className="mr-3 text-sm font-medium text-blue-700 hover:underline"
           onClick={() => abrirEdicion(producto)}
@@ -210,6 +218,14 @@ export function ListaProductos() {
         alCerrar={() => setModalAbierto(false)}
         producto={productoEnEdicion}
       />
+      {/* Se monta al abrirse para arrancar siempre con el stock del producto elegido */}
+      {productoAAjustar && (
+        <ModalAjustarStock
+          abierto
+          alCerrar={() => setProductoAAjustar(null)}
+          producto={productoAAjustar}
+        />
+      )}
     </div>
   );
 }

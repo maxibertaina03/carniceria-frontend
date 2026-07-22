@@ -28,10 +28,16 @@ export function useMutacionesProducto() {
     onSuccess: invalidar,
   });
 
+  const ajustarStock = useMutation({
+    mutationFn: ({ id, cantidad }: { id: string; cantidad: number }) =>
+      productosApi.ajustarStock(id, cantidad),
+    onSuccess: invalidar,
+  });
+
   const desactivar = useMutation({
     mutationFn: (id: string) => productosApi.desactivar(id),
     onSuccess: invalidar,
   });
 
-  return { crear, actualizar, desactivar };
+  return { crear, actualizar, ajustarStock, desactivar };
 }

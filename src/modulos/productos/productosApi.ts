@@ -22,6 +22,8 @@ export interface DatosProducto {
   costoUnitarioReferencia?: number;
   precioVentaReferencia?: number;
   seVende?: boolean;
+  // Cuánto hay hoy del producto al darlo de alta.
+  stockInicial?: number;
 }
 
 export const productosApi = {
@@ -42,6 +44,14 @@ export const productosApi = {
     datos: Partial<DatosProducto> & { activo?: boolean },
   ): Promise<Producto> {
     const { data } = await clienteHttp.patch(`/productos/${id}`, datos);
+    return data;
+  },
+
+  // Deja el stock en la cantidad real contada (no la suma).
+  async ajustarStock(id: string, cantidad: number): Promise<Producto> {
+    const { data } = await clienteHttp.post(`/productos/${id}/ajustar-stock`, {
+      cantidad,
+    });
     return data;
   },
 
