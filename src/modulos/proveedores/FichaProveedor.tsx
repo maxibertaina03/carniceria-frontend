@@ -4,7 +4,12 @@ import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import { Modal } from '../../compartido/componentes/Modal';
-import { formatearFechaYHora, formatearMoneda } from '../../compartido/formato';
+import {
+  formatearFecha,
+  formatearFechaYHora,
+  formatearMoneda,
+} from '../../compartido/formato';
+import { useCompras } from '../compras/useCompras';
 import { FormularioProveedor } from './FormularioProveedor';
 import {
   useMovimientosProveedor,
@@ -15,8 +20,12 @@ export function FichaProveedor() {
   const { id } = useParams<{ id: string }>();
   const navegar = useNavigate();
   const { data, isLoading, error, refetch } = useMovimientosProveedor(id!);
+  const { data: compras } = useCompras();
   const { registrarPago, desactivar, actualizar, eliminarDefinitivo } =
     useMutacionesProveedor();
+
+  const comprasDelProveedor =
+    compras?.filter((compra) => compra.proveedorId === id) ?? [];
 
   const [modalPagoAbierto, setModalPagoAbierto] = useState(false);
   const [modalEdicionAbierto, setModalEdicionAbierto] = useState(false);
@@ -172,6 +181,47 @@ export function FichaProveedor() {
                   <tr>
                     <td className="celda py-8 text-center text-gray-500" colSpan={4}>
                       Sin movimientos.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 className="mb-2 mt-6 text-lg font-semibold">Compras a este proveedor</h3>
+          <div className="tarjeta overflow-x-auto p-0">
+            <table className="w-full">
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr>
+                  <th className="encabezado-tabla">Fecha</th>
+                  <th className="encabezado-tabla">Productos</th>
+                  <th className="encabezado-tabla text-right">Total</th>
+                  <th className="encabezado-tabla text-right">Quedó a deber</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {comprasDelProveedor.map((compra) => (
+                  <tr key={compra.id}>
+                    <td className="celda">{formatearFecha(compra.fecha)}</td>
+                    <td className="celda">{compra.items.length}</td>
+                    <td className="celda text-right font-semibold">
+                      {formatearMoneda(compra.total)}
+                    </td>
+                    <td className="celda text-right">
+                      {compra.montoAdeudado > 0 ? (
+                        <span className="font-semibold text-red-600">
+                          {formatearMoneda(compra.montoAdeudado)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">pagada</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {comprasDelProveedor.length === 0 && (
+                  <tr>
+                    <td className="celda py-8 text-center text-gray-500" colSpan={4}>
+                      Todavía no hay compras a este proveedor.
                     </td>
                   </tr>
                 )}

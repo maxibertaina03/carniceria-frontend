@@ -5,6 +5,7 @@ import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { formatearMoneda } from '../../compartido/formato';
 import { FormularioProducto } from '../productos/FormularioProducto';
 import { useProductos } from '../productos/useProductos';
+import { FormularioProveedor } from '../proveedores/FormularioProveedor';
 import { useProveedores } from '../proveedores/useProveedores';
 import { useRegistrarCompra } from './useCompras';
 
@@ -24,7 +25,6 @@ export function FormularioNuevaCompra() {
   const { data: proveedores } = useProveedores();
   const registrarCompra = useRegistrarCompra();
 
-  const [proveedor, setProveedor] = useState('');
   const [proveedorId, setProveedorId] = useState('');
   const [modoPago, setModoPago] = useState<ModoPago>('CONTADO');
   const [pagaAhora, setPagaAhora] = useState('');
@@ -32,6 +32,7 @@ export function FormularioNuevaCompra() {
   const [lineas, setLineas] = useState<LineaCompra[]>([{ ...lineaVacia }]);
   const [error, setError] = useState<string | null>(null);
   const [modalProductoAbierto, setModalProductoAbierto] = useState(false);
+  const [modalProveedorAbierto, setModalProveedorAbierto] = useState(false);
 
   function cambiarLinea(indice: number, cambios: Partial<LineaCompra>) {
     setLineas((previas) =>
@@ -89,7 +90,7 @@ export function FormularioNuevaCompra() {
     try {
       const nombreProveedor = proveedores?.find((p) => p.id === proveedorId)?.nombre;
       await registrarCompra.mutateAsync({
-        proveedor: proveedorId ? nombreProveedor : proveedor || undefined,
+        proveedor: nombreProveedor,
         proveedorId: proveedorId || undefined,
         montoAdeudado: montoAdeudado > 0 ? Number(montoAdeudado.toFixed(2)) : undefined,
         observaciones: observaciones || undefined,
@@ -108,30 +109,29 @@ export function FormularioNuevaCompra() {
       <form onSubmit={manejarEnvio} className="tarjeta flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="etiqueta" htmlFor="proveedorSel">Proveedor</label>
-            {proveedores && proveedores.length > 0 ? (
-              <select
-                id="proveedorSel"
-                className="campo"
-                value={proveedorId}
-                onChange={(evento) => setProveedorId(evento.target.value)}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label className="etiqueta mb-0" htmlFor="proveedorSel">Proveedor</label>
+              <button
+                type="button"
+                className="text-sm font-medium text-blue-700 hover:underline"
+                onClick={() => setModalProveedorAbierto(true)}
               >
-                <option value="">Sin proveedor / suelto</option>
-                {proveedores.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                id="proveedorSel"
-                className="campo"
-                value={proveedor}
-                onChange={(evento) => setProveedor(evento.target.value)}
-                placeholder="Ej: Frigorífico (creá proveedores para llevar la cuenta)"
-              />
-            )}
+                ¿Proveedor nuevo? Crearlo
+              </button>
+            </div>
+            <select
+              id="proveedorSel"
+              className="campo"
+              value={proveedorId}
+              onChange={(evento) => setProveedorId(evento.target.value)}
+            >
+              <option value="">Sin proveedor</option>
+              {proveedores?.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nombre}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="etiqueta" htmlFor="observaciones">Observaciones (opcional)</label>
@@ -298,6 +298,11 @@ export function FormularioNuevaCompra() {
       <FormularioProducto
         abierto={modalProductoAbierto}
         alCerrar={() => setModalProductoAbierto(false)}
+      />
+      <FormularioProveedor
+        abierto={modalProveedorAbierto}
+        alCerrar={() => setModalProveedorAbierto(false)}
+        alCrear={(proveedor) => setProveedorId(proveedor.id)}
       />
     </div>
   );

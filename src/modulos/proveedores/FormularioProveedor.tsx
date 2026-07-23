@@ -9,9 +9,16 @@ interface Props {
   abierto: boolean;
   alCerrar: () => void;
   proveedor?: Proveedor | null;
+  // Se llama con el proveedor recién creado (para auto-seleccionarlo, ej. en compra).
+  alCrear?: (proveedor: Proveedor) => void;
 }
 
-export function FormularioProveedor({ abierto, alCerrar, proveedor }: Props) {
+export function FormularioProveedor({
+  abierto,
+  alCerrar,
+  proveedor,
+  alCrear,
+}: Props) {
   const { crear, actualizar } = useMutacionesProveedor();
   const [error, setError] = useState<string | null>(null);
   const editando = Boolean(proveedor);
@@ -28,7 +35,8 @@ export function FormularioProveedor({ abierto, alCerrar, proveedor }: Props) {
       if (proveedor) {
         await actualizar.mutateAsync({ id: proveedor.id, datos });
       } else {
-        await crear.mutateAsync(datos);
+        const creado = await crear.mutateAsync(datos);
+        alCrear?.(creado);
       }
       alCerrar();
     } catch (excepcion) {
