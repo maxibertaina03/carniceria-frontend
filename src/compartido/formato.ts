@@ -36,6 +36,15 @@ export function formatearMargen(costo: number, precioVenta: number): string {
   return `${margen.toFixed(0)}%`;
 }
 
+// Nombre del mes y año, ej. "Julio 2026" (para agrupar gastos por mes).
+export function formatearMes(fecha: string | Date): string {
+  const texto = new Date(fecha).toLocaleDateString('es-AR', {
+    month: 'long',
+    year: 'numeric',
+  });
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 export function formatearFecha(fecha: string | Date): string {
   return new Date(fecha).toLocaleDateString('es-AR', {
     day: '2-digit',

@@ -2,9 +2,44 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
-import { formatearFecha, formatearMoneda } from '../../compartido/formato';
+import {
+  formatearFecha,
+  formatearMes,
+  formatearMoneda,
+} from '../../compartido/formato';
 import { useProveedores } from '../proveedores/useProveedores';
+import { Gasto } from './gastosApi';
 import { useGastos, useMutacionesGasto } from './useGastos';
+
+function hoyISO(): string {
+  const hoy = new Date();
+  return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(
+    hoy.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+interface GrupoMes {
+  mes: string;
+  etiqueta: string;
+  total: number;
+  gastos: Gasto[];
+}
+
+// Agrupa los gastos por mes (más reciente primero) con el total de cada mes.
+function agruparPorMes(gastos: Gasto[]): GrupoMes[] {
+  const grupos = new Map<string, GrupoMes>();
+  for (const gasto of gastos) {
+    const mes = gasto.fecha.slice(0, 7); // AAAA-MM
+    let grupo = grupos.get(mes);
+    if (!grupo) {
+      grupo = { mes, etiqueta: formatearMes(gasto.fecha), total: 0, gastos: [] };
+      grupos.set(mes, grupo);
+    }
+    grupo.total += gasto.monto;
+    grupo.gastos.push(gasto);
+  }
+  return [...grupos.values()].sort((a, b) => (a.mes < b.mes ? 1 : -1));
+}
 
 export function PaginaGastos() {
   const { data: gastos, isLoading, error } = useGastos();
@@ -14,6 +49,7 @@ export function PaginaGastos() {
   const [concepto, setConcepto] = useState('');
   const [categoria, setCategoria] = useState('');
   const [monto, setMonto] = useState('');
+  const [fecha, setFecha] = useState(hoyISO());
   const [adeudado, setAdeudado] = useState(false);
   const [proveedorId, setProveedorId] = useState('');
   const [errorForm, setErrorForm] = useState<string | null>(null);
@@ -30,6 +66,7 @@ export function PaginaGastos() {
         concepto,
         categoria: categoria || undefined,
         monto: Number(monto),
+        fecha,
         adeudado,
         proveedorId: adeudado ? proveedorId : undefined,
       });
@@ -38,6 +75,7 @@ export function PaginaGastos() {
       setMonto('');
       setAdeudado(false);
       setProveedorId('');
+      // La fecha se deja en la última usada, para cargar varias boletas del mismo mes.
     } catch (excepcion) {
       setErrorForm(mensajeDeError(excepcion));
     }
@@ -52,12 +90,15 @@ export function PaginaGastos() {
     }
   }
 
+  const grupos = gastos ? agruparPorMes(gastos) : [];
+
   return (
     <div className="mx-auto max-w-3xl">
       <h2 className="mb-1 text-2xl font-bold">Gastos del negocio</h2>
       <p className="mb-4 text-sm text-gray-500">
-        Gastos que no son mercadería (alquiler, luz, sueldos…). Se descuentan del
-        resultado real en Reportes.
+        Gastos que no son mercadería (alquiler, luz, sueldos…). Cargá cada boleta
+        con su fecha: quedan agrupadas por mes y se descuentan del resultado real
+        en Reportes.
       </p>
 
       <form onSubmit={manejarEnvio} className="tarjeta mb-6 flex flex-col gap-4">
@@ -88,15 +129,28 @@ export function PaginaGastos() {
           </div>
         </div>
 
-        <div>
-          <label className="etiqueta" htmlFor="categoria">Categoría (opcional)</label>
-          <input
-            id="categoria"
-            className="campo"
-            value={categoria}
-            onChange={(evento) => setCategoria(evento.target.value)}
-            placeholder="Ej: Servicios"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="etiqueta" htmlFor="fecha">¿De qué mes es? (fecha)</label>
+            <input
+              id="fecha"
+              className="campo"
+              type="date"
+              value={fecha}
+              onChange={(evento) => setFecha(evento.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="etiqueta" htmlFor="categoria">Categoría (opcional)</label>
+            <input
+              id="categoria"
+              className="campo"
+              value={categoria}
+              onChange={(evento) => setCategoria(evento.target.value)}
+              placeholder="Ej: Servicios"
+            />
+          </div>
         </div>
 
         <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -145,37 +199,51 @@ export function PaginaGastos() {
         </p>
       )}
 
-      <div className="space-y-2">
-        {gastos?.map((gasto) => (
-          <div key={gasto.id} className="tarjeta flex items-center justify-between gap-2">
-            <div>
-              <p className="font-semibold">
-                {gasto.concepto}
-                {gasto.categoria ? (
-                  <span className="ml-2 text-sm font-normal text-gray-500">
-                    {gasto.categoria}
-                  </span>
-                ) : null}
-              </p>
-              <p className="text-sm text-gray-500">
-                {formatearFecha(gasto.fecha)}
-                {gasto.adeudado
-                  ? ` · a deber a ${gasto.proveedorNombre ?? 'proveedor'}`
-                  : ' · pagado'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold">{formatearMoneda(gasto.monto)}</p>
-              <button
-                className="text-sm font-medium text-red-600 hover:underline"
-                onClick={() => manejarEliminar(gasto.id)}
-              >
-                Borrar
-              </button>
-            </div>
+      {grupos.map((grupo) => (
+        <div key={grupo.mes} className="mb-5">
+          <div className="mb-2 flex items-baseline justify-between">
+            <h3 className="text-lg font-semibold">{grupo.etiqueta}</h3>
+            <span className="text-sm text-gray-500">
+              Total del mes:{' '}
+              <strong className="text-gray-900">{formatearMoneda(grupo.total)}</strong>
+            </span>
           </div>
-        ))}
-      </div>
+          <div className="space-y-2">
+            {grupo.gastos.map((gasto) => (
+              <div
+                key={gasto.id}
+                className="tarjeta flex items-center justify-between gap-2"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {gasto.concepto}
+                    {gasto.categoria ? (
+                      <span className="ml-2 text-sm font-normal text-gray-500">
+                        {gasto.categoria}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {formatearFecha(gasto.fecha)}
+                    {gasto.adeudado
+                      ? ` · a deber a ${gasto.proveedorNombre ?? 'proveedor'}`
+                      : ' · pagado'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold">{formatearMoneda(gasto.monto)}</p>
+                  <button
+                    className="text-sm font-medium text-red-600 hover:underline"
+                    onClick={() => manejarEliminar(gasto.id)}
+                  >
+                    Borrar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
