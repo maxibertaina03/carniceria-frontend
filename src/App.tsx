@@ -6,10 +6,13 @@ import { FormularioNuevaCompra } from './modulos/compras/FormularioNuevaCompra';
 import { ListaCompras } from './modulos/compras/ListaCompras';
 import { FormularioNuevoDesposte } from './modulos/desposte/FormularioNuevoDesposte';
 import { ListaDespostes } from './modulos/desposte/ListaDespostes';
+import { PaginaGastos } from './modulos/gastos/PaginaGastos';
 import { FormularioNuevoPedido } from './modulos/pedidos/FormularioNuevoPedido';
 import { ListaPedidos } from './modulos/pedidos/ListaPedidos';
 import { ListaProductos } from './modulos/productos/ListaProductos';
 import { PaginaProduccion } from './modulos/produccion/PaginaProduccion';
+import { FichaProveedor } from './modulos/proveedores/FichaProveedor';
+import { ListaProveedores } from './modulos/proveedores/ListaProveedores';
 import { PaginaReportes } from './modulos/reportes/PaginaReportes';
 import { FormularioNuevaVenta } from './modulos/ventas/FormularioNuevaVenta';
 import { ListaVentas } from './modulos/ventas/ListaVentas';
@@ -32,6 +35,8 @@ const seccionesPrincipales: Seccion[] = [
 const seccionesSecundarias: Seccion[] = [
   { ruta: '/reportes', nombre: 'Reportes', icono: '📊' },
   { ruta: '/compras', nombre: 'Compras', icono: '🚚' },
+  { ruta: '/proveedores', nombre: 'Proveedores', icono: '🏪' },
+  { ruta: '/gastos', nombre: 'Gastos', icono: '💸' },
   { ruta: '/desposte', nombre: 'Desposte', icono: '🔪' },
   { ruta: '/produccion', nombre: 'Producción', icono: '🏭' },
 ];
@@ -87,6 +92,9 @@ export function App() {
           <Route path="/productos" element={<ListaProductos />} />
           <Route path="/compras" element={<ListaCompras />} />
           <Route path="/compras/nueva" element={<FormularioNuevaCompra />} />
+          <Route path="/proveedores" element={<ListaProveedores />} />
+          <Route path="/proveedores/:id" element={<FichaProveedor />} />
+          <Route path="/gastos" element={<PaginaGastos />} />
           <Route path="/desposte" element={<ListaDespostes />} />
           <Route path="/desposte/nuevo" element={<FormularioNuevoDesposte />} />
           <Route path="/produccion" element={<PaginaProduccion />} />

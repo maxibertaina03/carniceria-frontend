@@ -77,22 +77,31 @@ export function PaginaReportes() {
 
       {ganancias.data && (
         <section className="tarjeta">
-          <p className="text-sm text-gray-500">Ganancia del período</p>
+          <p className="text-sm text-gray-500">Resultado del período (ventas − gastos)</p>
           <p
             className={`text-4xl font-semibold sm:text-5xl ${
-              ganancias.data.gananciaTotal < 0 ? 'text-red-600' : 'text-gray-900'
+              ganancias.data.resultado < 0 ? 'text-red-600' : 'text-green-700'
             }`}
           >
-            {formatearMoneda(ganancias.data.gananciaTotal)}
+            {formatearMoneda(ganancias.data.resultado)}
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 sm:grid-cols-3">
             <div>
-              <p className="text-sm text-gray-500">Ventas</p>
-              <p className="text-xl font-semibold">{ganancias.data.cantidadVentas}</p>
+              <p className="text-sm text-gray-500">Ganancia de ventas</p>
+              <p className="text-xl font-semibold">
+                {formatearMoneda(ganancias.data.gananciaTotal)}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total vendido</p>
+              <p className="text-sm text-gray-500">Gastos</p>
+              <p className="text-xl font-semibold text-red-600">
+                −{formatearMoneda(ganancias.data.totalGastos)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Ventas / total vendido</p>
               <p className="text-xl font-semibold">
+                {ganancias.data.cantidadVentas} ·{' '}
                 {formatearMoneda(ganancias.data.totalVendido)}
               </p>
             </div>

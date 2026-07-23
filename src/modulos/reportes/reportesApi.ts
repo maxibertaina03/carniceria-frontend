@@ -6,6 +6,8 @@ export interface ReporteGanancias {
   gananciaTotal: number;
   totalContado: number;
   totalFiado: number;
+  totalGastos: number;
+  resultado: number;
 }
 
 export interface ProductoMasVendido {

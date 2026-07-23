@@ -14,13 +14,20 @@ export interface Compra {
   id: string;
   fecha: string;
   proveedor: string | null;
+  proveedorId: string | null;
+  proveedorNombre: string | null;
   total: number;
+  montoAdeudado: number;
+  montoPagado: number;
+  formaPago: 'CONTADO' | 'ADEUDADO' | 'MIXTO';
   observaciones: string | null;
   items: ItemCompra[];
 }
 
 export interface DatosRegistrarCompra {
   proveedor?: string;
+  proveedorId?: string;
+  montoAdeudado?: number;
   observaciones?: string;
   items: { productoId: string; cantidad: number; costoUnitario: number }[];
 }

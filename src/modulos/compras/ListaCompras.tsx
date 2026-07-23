@@ -92,7 +92,14 @@ export function ListaCompras() {
             <div key={compra.id} className="tarjeta">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold">{compra.proveedor ?? 'Sin proveedor'}</p>
+                  <p className="font-semibold">
+                    {compra.proveedorNombre ?? compra.proveedor ?? 'Sin proveedor'}
+                    {compra.montoAdeudado > 0 && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">
+                        debe {formatearMoneda(compra.montoAdeudado)}
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm text-gray-500">
                     {formatearFecha(compra.fecha)} · {compra.items.length}{' '}
                     {compra.items.length === 1 ? 'producto' : 'productos'}
@@ -131,7 +138,14 @@ export function ListaCompras() {
                 <Fragment key={compra.id}>
                   <tr>
                     <td className="celda">{formatearFecha(compra.fecha)}</td>
-                    <td className="celda">{compra.proveedor ?? '—'}</td>
+                    <td className="celda">
+                      {compra.proveedorNombre ?? compra.proveedor ?? '—'}
+                      {compra.montoAdeudado > 0 && (
+                        <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">
+                          debe {formatearMoneda(compra.montoAdeudado)}
+                        </span>
+                      )}
+                    </td>
                     <td className="celda">{compra.items.length}</td>
                     <td className="celda font-semibold">
                       {formatearMoneda(compra.total)}

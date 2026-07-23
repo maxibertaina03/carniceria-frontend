@@ -5,6 +5,7 @@ import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { formatearMoneda } from '../../compartido/formato';
 import { FormularioProducto } from '../productos/FormularioProducto';
 import { useProductos } from '../productos/useProductos';
+import { useProveedores } from '../proveedores/useProveedores';
 import { useRegistrarCompra } from './useCompras';
 
 interface LineaCompra {
@@ -13,14 +14,20 @@ interface LineaCompra {
   costoUnitario: string;
 }
 
+type ModoPago = 'CONTADO' | 'ADEUDADO' | 'MIXTO';
+
 const lineaVacia: LineaCompra = { productoId: '', cantidad: '', costoUnitario: '' };
 
 export function FormularioNuevaCompra() {
   const navegar = useNavigate();
   const { data: productos } = useProductos();
+  const { data: proveedores } = useProveedores();
   const registrarCompra = useRegistrarCompra();
 
   const [proveedor, setProveedor] = useState('');
+  const [proveedorId, setProveedorId] = useState('');
+  const [modoPago, setModoPago] = useState<ModoPago>('CONTADO');
+  const [pagaAhora, setPagaAhora] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [lineas, setLineas] = useState<LineaCompra[]>([{ ...lineaVacia }]);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +57,13 @@ export function FormularioNuevaCompra() {
     return suma + (cantidad > 0 && costo >= 0 ? cantidad * costo : 0);
   }, 0);
 
+  const montoAdeudado =
+    modoPago === 'CONTADO'
+      ? 0
+      : modoPago === 'ADEUDADO'
+        ? total
+        : Math.max(total - Number(pagaAhora || 0), 0);
+
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
     setError(null);
@@ -64,9 +78,20 @@ export function FormularioNuevaCompra() {
       setError('Agregá al menos un producto a la compra.');
       return;
     }
+    if (modoPago !== 'CONTADO' && !proveedorId) {
+      setError('Para dejar algo a deber, elegí el proveedor.');
+      return;
+    }
+    if (modoPago === 'MIXTO' && montoAdeudado === 0) {
+      setError('En pago mixto, lo que pagás ahora debe ser menor al total.');
+      return;
+    }
     try {
+      const nombreProveedor = proveedores?.find((p) => p.id === proveedorId)?.nombre;
       await registrarCompra.mutateAsync({
-        proveedor: proveedor || undefined,
+        proveedor: proveedorId ? nombreProveedor : proveedor || undefined,
+        proveedorId: proveedorId || undefined,
+        montoAdeudado: montoAdeudado > 0 ? Number(montoAdeudado.toFixed(2)) : undefined,
         observaciones: observaciones || undefined,
         items,
       });
@@ -83,14 +108,30 @@ export function FormularioNuevaCompra() {
       <form onSubmit={manejarEnvio} className="tarjeta flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="etiqueta" htmlFor="proveedor">Proveedor (opcional)</label>
-            <input
-              id="proveedor"
-              className="campo"
-              value={proveedor}
-              onChange={(evento) => setProveedor(evento.target.value)}
-              placeholder="Ej: Frigorífico San José"
-            />
+            <label className="etiqueta" htmlFor="proveedorSel">Proveedor</label>
+            {proveedores && proveedores.length > 0 ? (
+              <select
+                id="proveedorSel"
+                className="campo"
+                value={proveedorId}
+                onChange={(evento) => setProveedorId(evento.target.value)}
+              >
+                <option value="">Sin proveedor / suelto</option>
+                {proveedores.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id="proveedorSel"
+                className="campo"
+                value={proveedor}
+                onChange={(evento) => setProveedor(evento.target.value)}
+                placeholder="Ej: Frigorífico (creá proveedores para llevar la cuenta)"
+              />
+            )}
           </div>
           <div>
             <label className="etiqueta" htmlFor="observaciones">Observaciones (opcional)</label>
@@ -187,9 +228,56 @@ export function FormularioNuevaCompra() {
           </button>
         </div>
 
-        <p className="text-right text-lg">
-          Total: <strong>{formatearMoneda(total)}</strong>
-        </p>
+        <div>
+          <span className="etiqueta">¿Cómo la pagás?</span>
+          <div className="grid grid-cols-3 gap-2 sm:flex">
+            {(
+              [
+                ['CONTADO', 'Pagué todo'],
+                ['ADEUDADO', 'Queda a deber'],
+                ['MIXTO', 'Pagué una parte'],
+              ] as [ModoPago, string][]
+            ).map(([modo, etiqueta]) => (
+              <button
+                key={modo}
+                type="button"
+                onClick={() => setModoPago(modo)}
+                className={`rounded-lg border px-2 py-2 text-center text-sm font-medium transition sm:px-4 ${
+                  modoPago === modo
+                    ? 'border-red-700 bg-red-50 text-red-700'
+                    : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {etiqueta}
+              </button>
+            ))}
+          </div>
+          {modoPago === 'MIXTO' && (
+            <div className="mt-2">
+              <label className="etiqueta" htmlFor="pagaAhora">¿Cuánto pagaste ahora?</label>
+              <input
+                id="pagaAhora"
+                className="campo sm:w-48"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={pagaAhora}
+                onChange={(evento) => setPagaAhora(evento.target.value)}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg bg-gray-50 p-3 text-right">
+          <p className="text-lg">
+            Total: <strong>{formatearMoneda(total)}</strong>
+          </p>
+          {montoAdeudado > 0 && (
+            <p className="text-sm text-red-600">
+              Queda a deber: <strong>{formatearMoneda(montoAdeudado)}</strong>
+            </p>
+          )}
+        </div>
 
         <AvisoError mensaje={error} />
 
