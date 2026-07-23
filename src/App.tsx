@@ -6,6 +6,8 @@ import { FormularioNuevaCompra } from './modulos/compras/FormularioNuevaCompra';
 import { ListaCompras } from './modulos/compras/ListaCompras';
 import { FormularioNuevoDesposte } from './modulos/desposte/FormularioNuevoDesposte';
 import { ListaDespostes } from './modulos/desposte/ListaDespostes';
+import { FormularioNuevoPedido } from './modulos/pedidos/FormularioNuevoPedido';
+import { ListaPedidos } from './modulos/pedidos/ListaPedidos';
 import { ListaProductos } from './modulos/productos/ListaProductos';
 import { PaginaProduccion } from './modulos/produccion/PaginaProduccion';
 import { PaginaReportes } from './modulos/reportes/PaginaReportes';
@@ -21,13 +23,14 @@ interface Seccion {
 // Las 4 secciones más usadas van en la barra inferior del celular.
 const seccionesPrincipales: Seccion[] = [
   { ruta: '/ventas', nombre: 'Ventas', icono: '🧾' },
+  { ruta: '/pedidos', nombre: 'Pedidos', icono: '📋' },
   { ruta: '/productos', nombre: 'Productos', icono: '🥩' },
   { ruta: '/clientes', nombre: 'Clientes', icono: '👥' },
-  { ruta: '/reportes', nombre: 'Reportes', icono: '📊' },
 ];
 
 // El resto se agrupa bajo el botón "Más" en el celular.
 const seccionesSecundarias: Seccion[] = [
+  { ruta: '/reportes', nombre: 'Reportes', icono: '📊' },
   { ruta: '/compras', nombre: 'Compras', icono: '🚚' },
   { ruta: '/desposte', nombre: 'Desposte', icono: '🔪' },
   { ruta: '/produccion', nombre: 'Producción', icono: '🏭' },
@@ -79,6 +82,8 @@ export function App() {
           <Route path="/" element={<Navigate to="/ventas" replace />} />
           <Route path="/ventas" element={<ListaVentas />} />
           <Route path="/ventas/nueva" element={<FormularioNuevaVenta />} />
+          <Route path="/pedidos" element={<ListaPedidos />} />
+          <Route path="/pedidos/nuevo" element={<FormularioNuevoPedido />} />
           <Route path="/productos" element={<ListaProductos />} />
           <Route path="/compras" element={<ListaCompras />} />
           <Route path="/compras/nueva" element={<FormularioNuevaCompra />} />
