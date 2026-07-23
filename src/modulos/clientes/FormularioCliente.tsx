@@ -9,9 +9,11 @@ interface Props {
   abierto: boolean;
   alCerrar: () => void;
   cliente?: Cliente | null;
+  // Se llama con el cliente recién creado (para auto-seleccionarlo, ej. en venta).
+  alCrear?: (cliente: Cliente) => void;
 }
 
-export function FormularioCliente({ abierto, alCerrar, cliente }: Props) {
+export function FormularioCliente({ abierto, alCerrar, cliente, alCrear }: Props) {
   const { crear, actualizar } = useMutacionesCliente();
   const [error, setError] = useState<string | null>(null);
   const editando = Boolean(cliente);
@@ -28,7 +30,8 @@ export function FormularioCliente({ abierto, alCerrar, cliente }: Props) {
       if (cliente) {
         await actualizar.mutateAsync({ id: cliente.id, datos });
       } else {
-        await crear.mutateAsync(datos);
+        const creado = await crear.mutateAsync(datos);
+        alCrear?.(creado);
       }
       alCerrar();
     } catch (excepcion) {

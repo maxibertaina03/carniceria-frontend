@@ -202,6 +202,36 @@ export function FormularioNuevaVenta() {
         </div>
 
         <div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="etiqueta mb-0" htmlFor="cliente">
+              Cliente {modoPago === 'CONTADO' ? '(opcional)' : ''}
+            </label>
+            <button
+              type="button"
+              className="text-sm font-medium text-blue-700 hover:underline"
+              onClick={() => setModalClienteAbierto(true)}
+            >
+              ¿Cliente nuevo? Crearlo
+            </button>
+          </div>
+          <select
+            id="cliente"
+            className="campo"
+            value={clienteId}
+            onChange={(evento) => setClienteId(evento.target.value)}
+          >
+            <option value="">
+              {modoPago === 'CONTADO' ? 'Consumidor final' : 'Elegir cliente…'}
+            </option>
+            {clientes?.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>
+                {cliente.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <span className="etiqueta">¿Cómo paga?</span>
           <div className="grid grid-cols-3 gap-2 sm:flex">
             {(
@@ -228,37 +258,18 @@ export function FormularioNuevaVenta() {
         </div>
 
         {modoPago !== 'CONTADO' && (
-          <div className="grid grid-cols-1 gap-4 rounded-lg bg-amber-50 p-4 sm:grid-cols-2">
-            <div>
-              <label className="etiqueta" htmlFor="cliente">¿Quién es el cliente?</label>
-              <select
-                id="cliente"
-                className="campo"
-                value={clienteId}
-                onChange={(evento) => setClienteId(evento.target.value)}
-                required
-              >
-                <option value="">Elegir cliente…</option>
-                {clientes?.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nombre}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="mt-1 text-xs font-medium text-blue-700 hover:underline"
-                onClick={() => setModalClienteAbierto(true)}
-              >
-                ¿Cliente nuevo? Crearlo
-              </button>
-            </div>
+          <div className="rounded-lg bg-amber-50 p-4">
+            {!clienteId && (
+              <p className="mb-2 text-sm font-medium text-amber-800">
+                Para fiar, elegí el cliente arriba (o creá uno nuevo).
+              </p>
+            )}
             {modoPago === 'MIXTO' && (
               <div>
                 <label className="etiqueta" htmlFor="pagaAhora">¿Cuánto paga ahora?</label>
                 <input
                   id="pagaAhora"
-                  className="campo"
+                  className="campo sm:w-48"
                   type="number"
                   min="0.01"
                   step="0.01"
@@ -313,6 +324,7 @@ export function FormularioNuevaVenta() {
       <FormularioCliente
         abierto={modalClienteAbierto}
         alCerrar={() => setModalClienteAbierto(false)}
+        alCrear={(cliente) => setClienteId(cliente.id)}
       />
     </div>
   );
