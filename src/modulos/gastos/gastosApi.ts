@@ -7,6 +7,8 @@ export interface Gasto {
   categoria: string | null;
   monto: number;
   adeudado: boolean;
+  fechaVencimiento: string | null;
+  pagado: boolean;
   proveedorId: string | null;
   proveedorNombre: string | null;
   observaciones: string | null;
@@ -17,6 +19,7 @@ export interface DatosGasto {
   categoria?: string;
   monto: number;
   adeudado?: boolean;
+  fechaVencimiento?: string;
   proveedorId?: string;
   observaciones?: string;
   fecha?: string;
@@ -30,6 +33,11 @@ export const gastosApi = {
 
   async crear(datos: DatosGasto): Promise<Gasto> {
     const { data } = await clienteHttp.post('/gastos', datos);
+    return data;
+  },
+
+  async pagar(id: string): Promise<Gasto> {
+    const { data } = await clienteHttp.post(`/gastos/${id}/pagar`);
     return data;
   },
 

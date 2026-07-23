@@ -20,8 +20,11 @@ export function useMutacionesProveedor() {
   };
 
   const crear = useMutation({
-    mutationFn: (datos: { nombre: string; telefono?: string }) =>
-      proveedoresApi.crear(datos),
+    mutationFn: (datos: {
+      nombre: string;
+      telefono?: string;
+      deudaInicial?: number;
+    }) => proveedoresApi.crear(datos),
     onSuccess: invalidar,
   });
 

@@ -44,13 +44,14 @@ function agruparPorMes(gastos: Gasto[]): GrupoMes[] {
 export function PaginaGastos() {
   const { data: gastos, isLoading, error } = useGastos();
   const { data: proveedores } = useProveedores();
-  const { crear, eliminar } = useMutacionesGasto();
+  const { crear, pagar, eliminar } = useMutacionesGasto();
 
   const [concepto, setConcepto] = useState('');
   const [categoria, setCategoria] = useState('');
   const [monto, setMonto] = useState('');
   const [fecha, setFecha] = useState(hoyISO());
   const [adeudado, setAdeudado] = useState(false);
+  const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [proveedorId, setProveedorId] = useState('');
   const [errorForm, setErrorForm] = useState<string | null>(null);
 
@@ -68,16 +69,26 @@ export function PaginaGastos() {
         monto: Number(monto),
         fecha,
         adeudado,
+        fechaVencimiento: adeudado && fechaVencimiento ? fechaVencimiento : undefined,
         proveedorId: adeudado ? proveedorId : undefined,
       });
       setConcepto('');
       setCategoria('');
       setMonto('');
       setAdeudado(false);
+      setFechaVencimiento('');
       setProveedorId('');
       // La fecha se deja en la última usada, para cargar varias boletas del mismo mes.
     } catch (excepcion) {
       setErrorForm(mensajeDeError(excepcion));
+    }
+  }
+
+  async function manejarPagar(id: string) {
+    try {
+      await pagar.mutateAsync(id);
+    } catch (excepcion) {
+      window.alert(mensajeDeError(excepcion));
     }
   }
 
@@ -163,22 +174,37 @@ export function PaginaGastos() {
         </label>
 
         {adeudado && (
-          <div>
-            <label className="etiqueta" htmlFor="proveedor">¿A quién se lo debés?</label>
-            <select
-              id="proveedor"
-              className="campo"
-              value={proveedorId}
-              onChange={(evento) => setProveedorId(evento.target.value)}
-              required
-            >
-              <option value="">Elegir proveedor…</option>
-              {proveedores?.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="etiqueta" htmlFor="proveedor">¿A quién se lo debés?</label>
+              <select
+                id="proveedor"
+                className="campo"
+                value={proveedorId}
+                onChange={(evento) => setProveedorId(evento.target.value)}
+                required
+              >
+                <option value="">Elegir proveedor…</option>
+                {proveedores?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Ej: EPEC (luz), Ecogas (gas). Si no está, cargalo en Proveedores.
+              </p>
+            </div>
+            <div>
+              <label className="etiqueta" htmlFor="vencimiento">¿Cuándo vence? (opcional)</label>
+              <input
+                id="vencimiento"
+                className="campo"
+                type="date"
+                value={fechaVencimiento}
+                onChange={(evento) => setFechaVencimiento(evento.target.value)}
+              />
+            </div>
           </div>
         )}
 
@@ -209,38 +235,72 @@ export function PaginaGastos() {
             </span>
           </div>
           <div className="space-y-2">
-            {grupo.gastos.map((gasto) => (
-              <div
-                key={gasto.id}
-                className="tarjeta flex items-center justify-between gap-2"
-              >
-                <div>
-                  <p className="font-semibold">
-                    {gasto.concepto}
-                    {gasto.categoria ? (
-                      <span className="ml-2 text-sm font-normal text-gray-500">
-                        {gasto.categoria}
-                      </span>
+            {grupo.gastos.map((gasto) => {
+              const pendiente = gasto.adeudado && !gasto.pagado;
+              const vencida =
+                pendiente &&
+                gasto.fechaVencimiento != null &&
+                gasto.fechaVencimiento.slice(0, 10) < hoyISO();
+              return (
+                <div
+                  key={gasto.id}
+                  className={`tarjeta flex items-center justify-between gap-2 ${
+                    vencida ? 'border-l-4 border-red-500' : ''
+                  }`}
+                >
+                  <div>
+                    <p className="font-semibold">
+                      {gasto.concepto}
+                      {gasto.categoria ? (
+                        <span className="ml-2 text-sm font-normal text-gray-500">
+                          {gasto.categoria}
+                        </span>
+                      ) : null}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatearFecha(gasto.fecha)}
+                      {gasto.adeudado
+                        ? ` · ${gasto.proveedorNombre ?? 'proveedor'}`
+                        : ' · pagado'}
+                    </p>
+                    {pendiente ? (
+                      <p
+                        className={`mt-1 text-sm font-semibold ${
+                          vencida ? 'text-red-600' : 'text-amber-600'
+                        }`}
+                      >
+                        {vencida ? '¡Vencida!' : 'A deber'}
+                        {gasto.fechaVencimiento
+                          ? ` · vence ${formatearFecha(gasto.fechaVencimiento)}`
+                          : ''}
+                      </p>
+                    ) : gasto.adeudado ? (
+                      <p className="mt-1 text-sm font-semibold text-green-700">
+                        Pagada ✓
+                      </p>
                     ) : null}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {formatearFecha(gasto.fecha)}
-                    {gasto.adeudado
-                      ? ` · a deber a ${gasto.proveedorNombre ?? 'proveedor'}`
-                      : ' · pagado'}
-                  </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 text-right">
+                    <p className="font-semibold">{formatearMoneda(gasto.monto)}</p>
+                    {pendiente && (
+                      <button
+                        className="rounded bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                        onClick={() => manejarPagar(gasto.id)}
+                        disabled={pagar.isPending}
+                      >
+                        Marcar pagada
+                      </button>
+                    )}
+                    <button
+                      className="text-sm font-medium text-red-600 hover:underline"
+                      onClick={() => manejarEliminar(gasto.id)}
+                    >
+                      Borrar
+                    </button>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold">{formatearMoneda(gasto.monto)}</p>
-                  <button
-                    className="text-sm font-medium text-red-600 hover:underline"
-                    onClick={() => manejarEliminar(gasto.id)}
-                  >
-                    Borrar
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}

@@ -19,10 +19,15 @@ export function useMutacionesGasto() {
     onSuccess: invalidar,
   });
 
+  const pagar = useMutation({
+    mutationFn: (id: string) => gastosApi.pagar(id),
+    onSuccess: invalidar,
+  });
+
   const eliminar = useMutation({
     mutationFn: (id: string) => gastosApi.eliminar(id),
     onSuccess: invalidar,
   });
 
-  return { crear, eliminar };
+  return { crear, pagar, eliminar };
 }

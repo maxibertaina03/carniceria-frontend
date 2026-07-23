@@ -35,7 +35,11 @@ export function FormularioProveedor({
       if (proveedor) {
         await actualizar.mutateAsync({ id: proveedor.id, datos });
       } else {
-        const creado = await crear.mutateAsync(datos);
+        const deudaInicial = Number(formulario.get('deudaInicial') ?? 0);
+        const creado = await crear.mutateAsync({
+          ...datos,
+          deudaInicial: deudaInicial > 0 ? deudaInicial : undefined,
+        });
         alCrear?.(creado);
       }
       alCerrar();
@@ -71,6 +75,27 @@ export function FormularioProveedor({
             defaultValue={proveedor?.telefono ?? ''}
           />
         </div>
+
+        {!editando && (
+          <div>
+            <label className="etiqueta" htmlFor="deudaInicial">
+              ¿Ya le debés algo? (opcional)
+            </label>
+            <input
+              id="deudaInicial"
+              name="deudaInicial"
+              className="campo"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Si arrancás con una deuda ya existente, ponela acá y queda como saldo
+              inicial.
+            </p>
+          </div>
+        )}
 
         <AvisoError mensaje={error} />
 

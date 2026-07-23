@@ -32,7 +32,11 @@ export const proveedoresApi = {
     return data;
   },
 
-  async crear(datos: { nombre: string; telefono?: string }): Promise<Proveedor> {
+  async crear(datos: {
+    nombre: string;
+    telefono?: string;
+    deudaInicial?: number;
+  }): Promise<Proveedor> {
     const { data } = await clienteHttp.post('/proveedores', datos);
     return data;
   },
