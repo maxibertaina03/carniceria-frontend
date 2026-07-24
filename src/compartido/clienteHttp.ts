@@ -5,6 +5,13 @@ export const clienteHttp = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
 });
 
+// Clave compartida: la app la manda en cada pedido para que el backend sepa
+// que viene de la aplicación oficial. Se configura en el build (VITE_CLAVE_API).
+const claveApi = import.meta.env.VITE_CLAVE_API;
+if (claveApi) {
+  clienteHttp.defaults.headers.common['x-clave-api'] = claveApi;
+}
+
 // Extrae un mensaje entendible de cualquier error de la API.
 export function mensajeDeError(error: unknown): string {
   if (axios.isAxiosError(error)) {
