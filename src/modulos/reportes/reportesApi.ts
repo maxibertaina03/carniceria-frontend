@@ -41,7 +41,30 @@ export interface RangoFechas {
   hasta?: string;
 }
 
+export interface ResumenInicio {
+  fecha: string;
+  ventasHoy: {
+    cantidad: number;
+    total: number;
+    contado: number;
+    fiado: number;
+  };
+  totalPorCobrar: number;
+  totalPorPagar: number;
+  pedidosPendientes: number;
+  boletas: {
+    vencidas: number;
+    porVencer: number;
+    totalAdeudado: number;
+  };
+}
+
 export const reportesApi = {
+  async resumenInicio(): Promise<ResumenInicio> {
+    const { data } = await clienteHttp.get('/reportes/inicio');
+    return data;
+  },
+
   async ganancias(rango: RangoFechas): Promise<ReporteGanancias> {
     const { data } = await clienteHttp.get('/reportes/ganancias', { params: rango });
     return data;

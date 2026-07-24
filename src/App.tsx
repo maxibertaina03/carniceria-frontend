@@ -7,6 +7,7 @@ import { ListaCompras } from './modulos/compras/ListaCompras';
 import { FormularioNuevoDesposte } from './modulos/desposte/FormularioNuevoDesposte';
 import { ListaDespostes } from './modulos/desposte/ListaDespostes';
 import { PaginaGastos } from './modulos/gastos/PaginaGastos';
+import { PaginaInicio } from './modulos/inicio/PaginaInicio';
 import { FormularioNuevoPedido } from './modulos/pedidos/FormularioNuevoPedido';
 import { ListaPedidos } from './modulos/pedidos/ListaPedidos';
 import { ListaProductos } from './modulos/productos/ListaProductos';
@@ -25,14 +26,15 @@ interface Seccion {
 
 // Las 4 secciones más usadas van en la barra inferior del celular.
 const seccionesPrincipales: Seccion[] = [
+  { ruta: '/inicio', nombre: 'Inicio', icono: '🏠' },
   { ruta: '/ventas', nombre: 'Ventas', icono: '🧾' },
   { ruta: '/pedidos', nombre: 'Pedidos', icono: '📋' },
-  { ruta: '/productos', nombre: 'Productos', icono: '🥩' },
   { ruta: '/clientes', nombre: 'Clientes', icono: '👥' },
 ];
 
 // El resto se agrupa bajo el botón "Más" en el celular.
 const seccionesSecundarias: Seccion[] = [
+  { ruta: '/productos', nombre: 'Productos', icono: '🥩' },
   { ruta: '/reportes', nombre: 'Reportes', icono: '📊' },
   { ruta: '/compras', nombre: 'Compras', icono: '🚚' },
   { ruta: '/proveedores', nombre: 'Proveedores', icono: '🏪' },
@@ -84,7 +86,8 @@ export function App() {
       {/* pb-24 en celular para que la barra inferior no tape el contenido */}
       <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
         <Routes>
-          <Route path="/" element={<Navigate to="/ventas" replace />} />
+          <Route path="/" element={<Navigate to="/inicio" replace />} />
+          <Route path="/inicio" element={<PaginaInicio />} />
           <Route path="/ventas" element={<ListaVentas />} />
           <Route path="/ventas/nueva" element={<FormularioNuevaVenta />} />
           <Route path="/pedidos" element={<ListaPedidos />} />
