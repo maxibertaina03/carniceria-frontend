@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { RequiereAdmin } from './modulos/admin/RequiereAdmin';
+import { ComprobanteImprimible } from './modulos/facturacion/ComprobanteImprimible';
+import { FormularioComprobante } from './modulos/facturacion/FormularioComprobante';
+import { PaginaFacturacion } from './modulos/facturacion/PaginaFacturacion';
 import { FichaCliente } from './modulos/clientes/FichaCliente';
 import { ListaClientes } from './modulos/clientes/ListaClientes';
 import { FormularioNuevaCompra } from './modulos/compras/FormularioNuevaCompra';
@@ -41,6 +45,7 @@ const seccionesSecundarias: Seccion[] = [
   { ruta: '/gastos', nombre: 'Gastos', icono: '💸' },
   { ruta: '/desposte', nombre: 'Desposte', icono: '🔪' },
   { ruta: '/produccion', nombre: 'Producción', icono: '🏭' },
+  { ruta: '/admin', nombre: 'Admin', icono: '🔒' },
 ];
 
 const todasLasSecciones = [...seccionesPrincipales, ...seccionesSecundarias];
@@ -55,7 +60,7 @@ export function App() {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 md:flex">
       {/* Barra lateral: solo en pantallas medianas y grandes (todas las secciones) */}
-      <aside className="hidden w-52 shrink-0 flex-col border-r border-gray-200 bg-white md:flex">
+      <aside className="hidden w-52 shrink-0 flex-col border-r border-gray-200 bg-white md:flex print:hidden">
         <div className="border-b border-gray-200 px-4 py-5">
           <h1 className="text-xl font-black text-red-700">La Carnicería</h1>
           <p className="text-xs text-gray-500">Sistema de gestión</p>
@@ -79,12 +84,12 @@ export function App() {
       </aside>
 
       {/* Barra superior: solo en el celular */}
-      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 md:hidden print:hidden">
         <h1 className="text-lg font-black text-red-700">La Carnicería</h1>
       </header>
 
       {/* pb-24 en celular para que la barra inferior no tape el contenido */}
-      <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
+      <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6 print:p-0">
         <Routes>
           <Route path="/" element={<Navigate to="/inicio" replace />} />
           <Route path="/inicio" element={<PaginaInicio />} />
@@ -104,6 +109,30 @@ export function App() {
           <Route path="/clientes" element={<ListaClientes />} />
           <Route path="/clientes/:id" element={<FichaCliente />} />
           <Route path="/reportes" element={<PaginaReportes />} />
+          <Route
+            path="/admin"
+            element={
+              <RequiereAdmin>
+                <PaginaFacturacion />
+              </RequiereAdmin>
+            }
+          />
+          <Route
+            path="/admin/nuevo"
+            element={
+              <RequiereAdmin>
+                <FormularioComprobante />
+              </RequiereAdmin>
+            }
+          />
+          <Route
+            path="/admin/comprobante/:id"
+            element={
+              <RequiereAdmin>
+                <ComprobanteImprimible />
+              </RequiereAdmin>
+            }
+          />
         </Routes>
       </main>
 
@@ -140,7 +169,7 @@ export function App() {
       )}
 
       {/* Navegación inferior tipo app: solo en el celular */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
         {seccionesPrincipales.map((seccion) => (
           <NavLink
             key={seccion.ruta}
