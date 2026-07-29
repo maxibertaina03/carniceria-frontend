@@ -66,7 +66,7 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             name="nombre"
             className="campo"
             defaultValue={producto?.nombre ?? ''}
-            placeholder="Ej: Milanesas"
+            placeholder={`Ej: ${config.etiquetas.ejemploProducto ?? 'producto'}`}
             required
           />
         </div>
@@ -112,7 +112,11 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             name="subcategoria"
             className="campo"
             defaultValue={producto?.subcategoria ?? ''}
-            placeholder="Ej: Cerdo, Vaca, Pollo (para milanesas y hamburguesas)"
+            placeholder={
+              config.etiquetas.ejemploSubcategoria
+                ? `Ej: ${config.etiquetas.ejemploSubcategoria}`
+                : 'Detalle opcional dentro de la categoría'
+            }
           />
         </div>
 
@@ -196,9 +200,12 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
           <span className="text-sm text-gray-700">
             <span className="font-medium">Se vende al mostrador</span>
             <br />
-            Destildá esto si es un insumo (sal, pimienta, tripa) o una carne
-            intermedia que solo se usa para producir. No aparecerá en la pantalla
-            de Ventas.
+            Destildá esto si es un insumo
+            {config.etiquetas.ejemploInsumos
+              ? ` (${config.etiquetas.ejemploInsumos})`
+              : ''}{' '}
+            o un producto intermedio que solo se usa para producir. No aparecerá
+            en la pantalla de Ventas.
           </span>
         </label>
 

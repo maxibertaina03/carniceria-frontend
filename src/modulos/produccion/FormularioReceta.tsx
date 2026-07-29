@@ -26,7 +26,11 @@ interface Props {
 export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
   const { data: productos } = useProductos();
   const { guardar } = useMutacionesReceta();
-  const { categoriasProducibles, categoriasInsumo } = useConfiguracion();
+  const { config, categoriasProducibles, categoriasInsumo } = useConfiguracion();
+  const nombresProducibles = config.categorias
+    .filter((c) => c.producible)
+    .map((c) => c.nombre.toLowerCase())
+    .join(', ');
   const [error, setError] = useState<string | null>(null);
 
   const editando = Boolean(receta);
@@ -158,9 +162,9 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
               ))}
             </select>
           )}
-          {!editando && (
+          {!editando && nombresProducibles && (
             <p className="mt-1 text-xs text-gray-500">
-              Se producen chacinados, milanesas y hamburguesas.
+              Se producen: {nombresProducibles}.
             </p>
           )}
         </div>

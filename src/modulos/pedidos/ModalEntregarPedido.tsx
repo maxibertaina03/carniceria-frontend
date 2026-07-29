@@ -101,7 +101,7 @@ export function ModalEntregarPedido({ abierto, alCerrar, pedido }: Props) {
     <Modal titulo={`Entregar pedido de ${paraQuien}`} abierto={abierto} alCerrar={alCerrar}>
       <form onSubmit={manejarEnvio} className="flex flex-col gap-4">
         <div>
-          <span className="etiqueta">Confirmá lo que entregás (pesá la carne)</span>
+          <span className="etiqueta">Confirmá lo que entregás (pesá cada cosa)</span>
           <div className="flex flex-col gap-2">
             {lineas.map((linea, indice) => (
               <div key={linea.productoId} className="flex flex-wrap items-center gap-2">
