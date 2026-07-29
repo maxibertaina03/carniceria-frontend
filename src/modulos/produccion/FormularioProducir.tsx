@@ -3,6 +3,8 @@ import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
+import { usePresentaciones } from '../presentaciones/usePresentaciones';
 import { useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
 import { useProducir } from './useProduccion';
@@ -15,16 +17,29 @@ interface Props {
 
 export function FormularioProducir({ abierto, alCerrar, receta }: Props) {
   const { data: productos } = useProductos();
+  const { config } = useConfiguracion();
+  const { data: presentaciones } = usePresentaciones(config.features.presentaciones);
   const producir = useProducir();
   const [cantidad, setCantidad] = useState('');
+  const [presentacionId, setPresentacionId] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   if (!receta) {
     return null;
   }
 
+  const presentacionesDelProducto = (presentaciones ?? []).filter(
+    (p) => p.productoId === receta.productoTerminadoId,
+  );
+  const presentacionSel = presentacionesDelProducto.find(
+    (p) => p.id === presentacionId,
+  );
+  const equivalente = presentacionSel?.cantidadEquivalente ?? 1;
+
   const cantidadNum = Number(cantidad) || 0;
-  const factor = cantidadNum > 0 ? cantidadNum / receta.rindeCantidad : 0;
+  // Si se produce por presentación, se convierte a la unidad base del producto.
+  const cantidadBase = cantidadNum * equivalente;
+  const factor = cantidadBase > 0 ? cantidadBase / receta.rindeCantidad : 0;
 
   // Ingredientes escalados con su costo actual y aviso de stock.
   const filas = receta.ingredientes.map((ingrediente) => {
@@ -43,22 +58,23 @@ export function FormularioProducir({ abierto, alCerrar, receta }: Props) {
   });
 
   const costoTotal = filas.reduce((suma, fila) => suma + fila.costo, 0);
-  const costoUnitario = cantidadNum > 0 ? costoTotal / cantidadNum : 0;
-  const faltaStock = filas.some((fila) => !fila.alcanza) && cantidadNum > 0;
+  const costoUnitario = cantidadBase > 0 ? costoTotal / cantidadBase : 0;
+  const faltaStock = filas.some((fila) => !fila.alcanza) && cantidadBase > 0;
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
     setError(null);
-    if (!(cantidadNum > 0)) {
+    if (!(cantidadBase > 0)) {
       setError('Indicá cuánto querés producir.');
       return;
     }
     try {
       await producir.mutateAsync({
         productoTerminadoId: receta!.productoTerminadoId,
-        cantidadProducida: cantidadNum,
+        cantidadProducida: cantidadBase,
       });
       setCantidad('');
+      setPresentacionId('');
       alCerrar();
     } catch (excepcion) {
       setError(mensajeDeError(excepcion));
@@ -79,17 +95,38 @@ export function FormularioProducir({ abierto, alCerrar, receta }: Props) {
           <label className="etiqueta" htmlFor="cantidad">
             ¿Cuánto querés producir? ({formatearCantidad(receta.rindeCantidad, unidadTerminado)} por lote)
           </label>
-          <input
-            id="cantidad"
-            className="campo"
-            type="number"
-            min="0.001"
-            step="0.001"
-            value={cantidad}
-            onChange={(evento) => setCantidad(evento.target.value)}
-            placeholder="Ej: 30"
-            autoFocus
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              id="cantidad"
+              className="campo min-w-0 flex-1"
+              type="number"
+              min="0.001"
+              step="0.001"
+              value={cantidad}
+              onChange={(evento) => setCantidad(evento.target.value)}
+              placeholder="Ej: 30"
+              autoFocus
+            />
+            {config.features.presentaciones && presentacionesDelProducto.length > 0 && (
+              <select
+                className="campo sm:w-40"
+                value={presentacionId}
+                onChange={(evento) => setPresentacionId(evento.target.value)}
+              >
+                <option value="">{unidadTerminado === 'KG' ? 'kilos' : 'unidades'}</option>
+                {presentacionesDelProducto.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          {presentacionSel && cantidadNum > 0 && (
+            <p className="mt-1 text-xs text-gray-500">
+              = {formatearCantidad(cantidadBase, unidadTerminado)} al stock
+            </p>
+          )}
         </div>
 
         {cantidadNum > 0 && (
