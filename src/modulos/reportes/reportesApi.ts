@@ -57,6 +57,10 @@ export interface ResumenInicio {
     porVencer: number;
     totalAdeudado: number;
   };
+  lotes: {
+    vencidos: number;
+    porVencer: number;
+  };
 }
 
 export const reportesApi = {

@@ -55,6 +55,38 @@ export function PaginaInicio() {
             </Link>
           )}
 
+          {/* Avisos de mercadería por vencimiento (rubros con lotes) */}
+          {data.lotes.vencidos > 0 && (
+            <Link
+              to="/productos"
+              className="flex items-center gap-3 rounded-xl border-l-4 border-red-500 bg-red-50 p-4 text-red-800"
+            >
+              <span className="text-2xl">🥶</span>
+              <span>
+                Hay{' '}
+                <strong>
+                  {data.lotes.vencidos} lote{data.lotes.vencidos > 1 ? 's' : ''} de
+                  mercadería vencid{data.lotes.vencidos > 1 ? 'os' : 'o'}
+                </strong>
+                . Revisá el stock.
+              </span>
+            </Link>
+          )}
+          {data.lotes.porVencer > 0 && (
+            <Link
+              to="/productos"
+              className="flex items-center gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50 p-4 text-amber-800"
+            >
+              <span className="text-2xl">⏳</span>
+              <span>
+                <strong>
+                  {data.lotes.porVencer} lote{data.lotes.porVencer > 1 ? 's' : ''}
+                </strong>{' '}
+                de mercadería vence{data.lotes.porVencer > 1 ? 'n' : ''} esta semana.
+              </span>
+            </Link>
+          )}
+
           {/* Ventas de hoy: la tarjeta principal */}
           <div className="tarjeta">
             <div className="flex items-start justify-between">

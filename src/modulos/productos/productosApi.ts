@@ -10,6 +10,7 @@ export interface Producto {
   costoUnitarioReferencia: number;
   precioVentaReferencia: number;
   seVende: boolean;
+  diasVencimiento: number | null;
   activo: boolean;
   fechaCreacion: string;
 }
@@ -22,6 +23,8 @@ export interface DatosProducto {
   costoUnitarioReferencia?: number;
   precioVentaReferencia?: number;
   seVende?: boolean;
+  // Días de vencimiento (solo rubros con lotes). null para quitarlo.
+  diasVencimiento?: number | null;
   // Cuánto hay hoy del producto al darlo de alta.
   stockInicial?: number;
 }

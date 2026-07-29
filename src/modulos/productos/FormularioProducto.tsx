@@ -24,6 +24,7 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
     evento.preventDefault();
     setError(null);
     const formulario = new FormData(evento.currentTarget);
+    const diasStr = String(formulario.get('diasVencimiento') ?? '').trim();
     const datos = {
       nombre: String(formulario.get('nombre') ?? ''),
       categoria: String(formulario.get('categoria') ?? 'OTROS'),
@@ -32,6 +33,10 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
       costoUnitarioReferencia: Number(formulario.get('costo') ?? 0),
       precioVentaReferencia: Number(formulario.get('precio') ?? 0),
       seVende: formulario.get('seVende') === 'on',
+      // Días de vencimiento: solo se manda en rubros con lotes (vacío = null).
+      ...(config.features.lotes
+        ? { diasVencimiento: diasStr ? Number(diasStr) : null }
+        : {}),
       // Solo al dar de alta: cuánto hay hoy de este producto.
       ...(producto ? {} : { stockInicial: Number(formulario.get('stockInicial') ?? 0) }),
     };
@@ -110,6 +115,28 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
             placeholder="Ej: Cerdo, Vaca, Pollo (para milanesas y hamburguesas)"
           />
         </div>
+
+        {config.features.lotes && (
+          <div>
+            <label className="etiqueta" htmlFor="diasVencimiento">
+              ¿A cuántos días vence? (opcional)
+            </label>
+            <input
+              id="diasVencimiento"
+              name="diasVencimiento"
+              className="campo sm:w-48"
+              type="number"
+              min="1"
+              step="1"
+              defaultValue={producto?.diasVencimiento ?? ''}
+              placeholder="Ej: 4"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Días que dura desde que se elabora. Se usa para avisar cuándo vence
+              cada lote. Dejalo vacío si no vence.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
