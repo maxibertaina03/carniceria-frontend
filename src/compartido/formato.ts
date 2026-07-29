@@ -63,22 +63,8 @@ export function formatearFechaYHora(fecha: string | Date): string {
   });
 }
 
-export const NOMBRES_CATEGORIA: Record<string, string> = {
-  VACUNO: 'Vacuno',
-  CERDO: 'Cerdo',
-  AVE: 'Ave',
-  CHACINADOS: 'Chacinados',
-  MILANESAS: 'Milanesas',
-  HAMBURGUESAS: 'Hamburguesas',
-  INSUMOS: 'Insumos',
-  OTROS: 'Otros',
-};
-
-// Categorías cuyos productos se fabrican con una receta (módulo Producción).
-export const CATEGORIAS_PRODUCIBLES = ['CHACINADOS', 'MILANESAS', 'HAMBURGUESAS'];
-
-// Categoría de los ingredientes que se pueden usar en una receta.
-export const CATEGORIA_INSUMO = 'INSUMOS';
+// Las categorías (nombres, cuáles son producibles y cuáles insumo) dependen del
+// rubro y salen de la configuración: usar useConfiguracion() (ConfiguracionProvider).
 
 export const NOMBRES_FORMA_PAGO: Record<string, string> = {
   CONTADO: 'Contado',

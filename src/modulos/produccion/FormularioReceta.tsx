@@ -2,13 +2,9 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
-import {
-  abreviarUnidad,
-  CATEGORIA_INSUMO,
-  CATEGORIAS_PRODUCIBLES,
-  formatearMoneda,
-} from '../../compartido/formato';
+import { abreviarUnidad, formatearMoneda } from '../../compartido/formato';
 import { convertirCantidad, unidadesCompatibles } from '../../compartido/unidades';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { useProductos } from '../productos/useProductos';
 import { Receta } from './produccionApi';
 import { useMutacionesReceta } from './useProduccion';
@@ -30,6 +26,7 @@ interface Props {
 export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
   const { data: productos } = useProductos();
   const { guardar } = useMutacionesReceta();
+  const { categoriasProducibles, categoriasInsumo } = useConfiguracion();
   const [error, setError] = useState<string | null>(null);
 
   const editando = Boolean(receta);
@@ -54,9 +51,9 @@ export function FormularioReceta({ abierto, alCerrar, receta }: Props) {
   // El producto a producir solo puede ser de categorías producibles;
   // los ingredientes solo insumos (incluye las carnes de producción).
   const productosProducibles = productos?.filter((p) =>
-    CATEGORIAS_PRODUCIBLES.includes(p.categoria),
+    categoriasProducibles.includes(p.categoria),
   );
-  const insumos = productos?.filter((p) => p.categoria === CATEGORIA_INSUMO);
+  const insumos = productos?.filter((p) => categoriasInsumo.includes(p.categoria));
 
   function unidadDe(productoId: string): string {
     return productos?.find((p) => p.id === productoId)?.unidadMedida ?? '';

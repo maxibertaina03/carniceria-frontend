@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { RequiereAdmin } from './modulos/admin/RequiereAdmin';
+import { useConfiguracion } from './modulos/configuracion/ConfiguracionProvider';
 import { ComprobanteImprimible } from './modulos/facturacion/ComprobanteImprimible';
 import { FormularioComprobante } from './modulos/facturacion/FormularioComprobante';
 import { PaginaFacturacion } from './modulos/facturacion/PaginaFacturacion';
@@ -48,12 +49,20 @@ const seccionesSecundarias: Seccion[] = [
   { ruta: '/admin', nombre: 'Admin', icono: '🔒' },
 ];
 
-const todasLasSecciones = [...seccionesPrincipales, ...seccionesSecundarias];
+// El código de módulo es la ruta sin la barra inicial (ej. '/inicio' -> 'inicio').
+const codigoModulo = (seccion: Seccion) => seccion.ruta.slice(1);
 
 export function App() {
   const [menuMasAbierto, setMenuMasAbierto] = useState(false);
   const ubicacion = useLocation();
-  const enSeccionSecundaria = seccionesSecundarias.some((s) =>
+  const { config, tieneModulo } = useConfiguracion();
+
+  // El menú se arma según los módulos habilitados para el rubro del negocio.
+  const principales = seccionesPrincipales.filter((s) => tieneModulo(codigoModulo(s)));
+  const secundarias = seccionesSecundarias.filter((s) => tieneModulo(codigoModulo(s)));
+  const todasLasSecciones = [...principales, ...secundarias];
+
+  const enSeccionSecundaria = secundarias.some((s) =>
     ubicacion.pathname.startsWith(s.ruta),
   );
 
@@ -62,7 +71,7 @@ export function App() {
       {/* Barra lateral: solo en pantallas medianas y grandes (todas las secciones) */}
       <aside className="hidden w-52 shrink-0 flex-col border-r border-gray-200 bg-white md:flex print:hidden">
         <div className="border-b border-gray-200 px-4 py-5">
-          <h1 className="text-xl font-black text-red-700">La Carnicería</h1>
+          <h1 className="text-xl font-black text-red-700">{config.nombreNegocio}</h1>
           <p className="text-xs text-gray-500">Sistema de gestión</p>
         </div>
         <nav className="flex flex-col gap-1 p-3">
@@ -85,7 +94,7 @@ export function App() {
 
       {/* Barra superior: solo en el celular */}
       <header className="sticky top-0 z-40 border-b border-gray-200 bg-white px-4 py-3 md:hidden print:hidden">
-        <h1 className="text-lg font-black text-red-700">La Carnicería</h1>
+        <h1 className="text-lg font-black text-red-700">{config.nombreNegocio}</h1>
       </header>
 
       {/* pb-24 en celular para que la barra inferior no tape el contenido */}
@@ -149,7 +158,7 @@ export function App() {
             <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
               Más secciones
             </p>
-            {seccionesSecundarias.map((seccion) => (
+            {secundarias.map((seccion) => (
               <NavLink
                 key={seccion.ruta}
                 to={seccion.ruta}
@@ -170,7 +179,7 @@ export function App() {
 
       {/* Navegación inferior tipo app: solo en el celular */}
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
-        {seccionesPrincipales.map((seccion) => (
+        {principales.map((seccion) => (
           <NavLink
             key={seccion.ruta}
             to={seccion.ruta}

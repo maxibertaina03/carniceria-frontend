@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
-import { NOMBRES_CATEGORIA } from '../../compartido/formato';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { Producto } from './productosApi';
 import { useMutacionesProducto } from './useProductos';
 
@@ -15,6 +15,7 @@ interface Props {
 
 export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
   const { crear, actualizar } = useMutacionesProducto();
+  const { config } = useConfiguracion();
   const [error, setError] = useState<string | null>(null);
 
   const editando = Boolean(producto);
@@ -72,10 +73,12 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
               id="categoria"
               name="categoria"
               className="campo"
-              defaultValue={producto?.categoria ?? 'VACUNO'}
+              defaultValue={producto?.categoria ?? config.categorias[0]?.codigo}
             >
-              {Object.entries(NOMBRES_CATEGORIA).map(([valor, nombre]) => (
-                <option key={valor} value={valor}>{nombre}</option>
+              {config.categorias.map((categoria) => (
+                <option key={categoria.codigo} value={categoria.codigo}>
+                  {categoria.nombre}
+                </option>
               ))}
             </select>
           </div>

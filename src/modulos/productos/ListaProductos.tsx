@@ -1,11 +1,8 @@
 import { useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
-import {
-  formatearCantidad,
-  formatearMoneda,
-  NOMBRES_CATEGORIA,
-} from '../../compartido/formato';
+import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { FormularioProducto } from './FormularioProducto';
 import { ModalAjustarStock } from './ModalAjustarStock';
 import { Producto } from './productosApi';
@@ -15,6 +12,7 @@ export function ListaProductos() {
   const [verInactivos, setVerInactivos] = useState(false);
   const { data: productos, isLoading, error } = useProductos(verInactivos);
   const { desactivar, actualizar } = useMutacionesProducto();
+  const { nombreCategoria } = useConfiguracion();
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
   const [productoAAjustar, setProductoAAjustar] = useState<Producto | null>(null);
@@ -130,7 +128,7 @@ export function ListaProductos() {
                     )}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                    {nombreCategoria(producto.categoria)}
                     {producto.subcategoria ? ` · ${producto.subcategoria}` : ''}
                   </p>
                 </div>
@@ -185,7 +183,7 @@ export function ListaProductos() {
                     )}
                   </td>
                   <td className="celda">
-                    {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                    {nombreCategoria(producto.categoria)}
                     {producto.subcategoria ? ` · ${producto.subcategoria}` : ''}
                   </td>
                   <td className="celda">

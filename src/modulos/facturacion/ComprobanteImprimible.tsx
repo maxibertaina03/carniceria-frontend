@@ -6,6 +6,7 @@ import {
   formatearFecha,
   formatearMoneda,
 } from '../../compartido/formato';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { ETIQUETA_TIPO } from './facturacionApi';
 import { useComprobante, useMutacionesComprobante } from './useFacturacion';
 
@@ -13,6 +14,7 @@ export function ComprobanteImprimible() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error, refetch } = useComprobante(id!);
   const { anular } = useMutacionesComprobante();
+  const { config } = useConfiguracion();
 
   async function manejarAnular() {
     if (!window.confirm('¿Anular este comprobante? Queda registrado como anulado.'))
@@ -55,7 +57,7 @@ export function ComprobanteImprimible() {
           {/* Encabezado */}
           <div className="flex items-start justify-between border-b border-gray-200 pb-4">
             <div>
-              <h1 className="text-2xl font-black text-red-700">La Carnicería</h1>
+              <h1 className="text-2xl font-black text-red-700">{config.nombreNegocio}</h1>
               <p className="text-sm text-gray-500">Comprobante interno</p>
             </div>
             <div className="text-right">

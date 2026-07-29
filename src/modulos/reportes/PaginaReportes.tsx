@@ -2,11 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
-import {
-  formatearCantidad,
-  formatearMoneda,
-  NOMBRES_CATEGORIA,
-} from '../../compartido/formato';
+import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { reportesApi } from './reportesApi';
 
 function primerDiaDelMes(): string {
@@ -25,6 +22,7 @@ export function PaginaReportes() {
   const [desde, setDesde] = useState(primerDiaDelMes());
   const [hasta, setHasta] = useState(hoyISO());
   const rango = { desde, hasta };
+  const { nombreCategoria } = useConfiguracion();
 
   const ganancias = useQuery({
     queryKey: ['reportes', 'ganancias', rango],
@@ -243,7 +241,7 @@ export function PaginaReportes() {
                   <tr key={producto.productoId}>
                     <td className="celda font-medium">{producto.nombre}</td>
                     <td className="celda hidden sm:table-cell">
-                      {NOMBRES_CATEGORIA[producto.categoria] ?? producto.categoria}
+                      {nombreCategoria(producto.categoria)}
                     </td>
                     <td className="celda text-right tabular-nums">
                       {formatearCantidad(producto.stockActual, producto.unidadMedida)}

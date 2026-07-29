@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
+import { ConfiguracionProvider } from './modulos/configuracion/ConfiguracionProvider';
 import './estilos.css';
 
 const clienteConsultas = new QueryClient({
@@ -15,7 +16,9 @@ createRoot(document.getElementById('raiz')!).render(
   <StrictMode>
     <QueryClientProvider client={clienteConsultas}>
       <BrowserRouter>
-        <App />
+        <ConfiguracionProvider>
+          <App />
+        </ConfiguracionProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,
