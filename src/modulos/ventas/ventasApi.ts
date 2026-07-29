@@ -26,11 +26,19 @@ export interface Venta {
   items: ItemVenta[];
 }
 
+export interface ItemRegistrarVenta {
+  // Producto con su precio, o una presentación (½ kg, docena…).
+  productoId?: string;
+  presentacionId?: string;
+  cantidad: number;
+  precioUnitarioVenta?: number;
+}
+
 export interface DatosRegistrarVenta {
   clienteId?: string;
   montoFiado?: number;
   observaciones?: string;
-  items: { productoId: string; cantidad: number; precioUnitarioVenta: number }[];
+  items: ItemRegistrarVenta[];
 }
 
 export const ventasApi = {

@@ -3,6 +3,7 @@ import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
 import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
+import { GestionPresentaciones } from '../presentaciones/GestionPresentaciones';
 import { FormularioProducto } from './FormularioProducto';
 import { ModalAjustarStock } from './ModalAjustarStock';
 import { Producto } from './productosApi';
@@ -12,10 +13,12 @@ export function ListaProductos() {
   const [verInactivos, setVerInactivos] = useState(false);
   const { data: productos, isLoading, error } = useProductos(verInactivos);
   const { desactivar, actualizar } = useMutacionesProducto();
-  const { nombreCategoria } = useConfiguracion();
+  const { nombreCategoria, config } = useConfiguracion();
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
   const [productoAAjustar, setProductoAAjustar] = useState<Producto | null>(null);
+  const [productoPresentaciones, setProductoPresentaciones] =
+    useState<Producto | null>(null);
 
   function abrirNuevo() {
     setProductoEnEdicion(null);
@@ -64,6 +67,14 @@ export function ListaProductos() {
         >
           Editar
         </button>
+        {config.features.presentaciones && (
+          <button
+            className="mr-3 text-sm font-medium text-blue-700 hover:underline"
+            onClick={() => setProductoPresentaciones(producto)}
+          >
+            Presentaciones
+          </button>
+        )}
         {producto.activo ? (
           <button
             className="text-sm font-medium text-red-600 hover:underline"
@@ -222,6 +233,13 @@ export function ListaProductos() {
           abierto
           alCerrar={() => setProductoAAjustar(null)}
           producto={productoAAjustar}
+        />
+      )}
+      {productoPresentaciones && (
+        <GestionPresentaciones
+          abierto
+          alCerrar={() => setProductoPresentaciones(null)}
+          producto={productoPresentaciones}
         />
       )}
     </div>

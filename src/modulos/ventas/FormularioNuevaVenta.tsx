@@ -5,23 +5,34 @@ import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
 import { FormularioCliente } from '../clientes/FormularioCliente';
 import { useClientes } from '../clientes/useClientes';
+import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
+import { usePresentaciones } from '../presentaciones/usePresentaciones';
 import { useProductos } from '../productos/useProductos';
 import { useRegistrarVenta } from './useVentas';
 
 interface LineaVenta {
   productoId: string;
+  // Si se vende por presentación (½ kg, docena…), su id; si no, vacío.
+  presentacionId: string;
   cantidad: string;
   precioUnitarioVenta: string;
 }
 
 type ModoPago = 'CONTADO' | 'FIADO' | 'MIXTO';
 
-const lineaVacia: LineaVenta = { productoId: '', cantidad: '', precioUnitarioVenta: '' };
+const lineaVacia: LineaVenta = {
+  productoId: '',
+  presentacionId: '',
+  cantidad: '',
+  precioUnitarioVenta: '',
+};
 
 export function FormularioNuevaVenta() {
   const navegar = useNavigate();
   const { data: todosLosProductos } = useProductos();
   const { data: clientes } = useClientes();
+  const { config } = useConfiguracion();
+  const { data: presentaciones } = usePresentaciones(config.features.presentaciones);
   const registrarVenta = useRegistrarVenta();
 
   // En Ventas solo se ofrecen los productos que se venden al mostrador
@@ -42,13 +53,33 @@ export function FormularioNuevaVenta() {
     );
   }
 
+  const presentacionesDe = (productoId: string) =>
+    (presentaciones ?? []).filter((p) => p.productoId === productoId);
+
   function elegirProducto(indice: number, productoId: string) {
     const producto = productos?.find((p) => p.id === productoId);
     cambiarLinea(indice, {
       productoId,
+      // Al cambiar de producto se vuelve a "venta normal" (sin presentación).
+      presentacionId: '',
       // Sugerimos el precio de referencia; se puede cambiar en el momento.
       precioUnitarioVenta:
         producto && producto.precioVentaReferencia > 0
+          ? String(producto.precioVentaReferencia)
+          : '',
+    });
+  }
+
+  function elegirPresentacion(indice: number, presentacionId: string) {
+    const presentacion = presentaciones?.find((p) => p.id === presentacionId);
+    const producto = productos?.find((p) => p.id === lineas[indice].productoId);
+    cambiarLinea(indice, {
+      presentacionId,
+      // Con presentación, el precio es el de la presentación (por unidad de ella);
+      // sin presentación, se vuelve al precio de referencia del producto.
+      precioUnitarioVenta: presentacion
+        ? String(presentacion.precio)
+        : producto && producto.precioVentaReferencia > 0
           ? String(producto.precioVentaReferencia)
           : '',
     });
@@ -73,11 +104,18 @@ export function FormularioNuevaVenta() {
 
     const items = lineas
       .filter((linea) => linea.productoId)
-      .map((linea) => ({
-        productoId: linea.productoId,
-        cantidad: Number(linea.cantidad),
-        precioUnitarioVenta: Number(linea.precioUnitarioVenta),
-      }));
+      .map((linea) =>
+        linea.presentacionId
+          ? {
+              presentacionId: linea.presentacionId,
+              cantidad: Number(linea.cantidad),
+            }
+          : {
+              productoId: linea.productoId,
+              cantidad: Number(linea.cantidad),
+              precioUnitarioVenta: Number(linea.precioUnitarioVenta),
+            },
+      );
     if (items.length === 0) {
       setError('Agregá al menos un producto a la venta.');
       return;
@@ -133,12 +171,30 @@ export function FormularioNuevaVenta() {
                         </option>
                       ))}
                     </select>
+                    {config.features.presentaciones &&
+                      producto &&
+                      presentacionesDe(producto.id).length > 0 && (
+                        <select
+                          className="campo min-w-0 flex-1 sm:w-40 sm:flex-none"
+                          value={linea.presentacionId}
+                          onChange={(evento) =>
+                            elegirPresentacion(indice, evento.target.value)
+                          }
+                        >
+                          <option value="">Por {producto.unidadMedida.toLowerCase()}</option>
+                          {presentacionesDe(producto.id).map((pres) => (
+                            <option key={pres.id} value={pres.id}>
+                              {pres.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     <input
                       className="campo min-w-0 flex-1 sm:w-28 sm:flex-none"
                       type="number"
                       min="0.001"
                       step="0.001"
-                      placeholder="Cantidad"
+                      placeholder={linea.presentacionId ? 'Cantidad' : 'Cantidad'}
                       value={linea.cantidad}
                       onChange={(evento) =>
                         cambiarLinea(indice, { cantidad: evento.target.value })
@@ -150,8 +206,9 @@ export function FormularioNuevaVenta() {
                       type="number"
                       min="0"
                       step="0.01"
-                      placeholder="Precio x kg/u."
+                      placeholder="Precio"
                       value={linea.precioUnitarioVenta}
+                      readOnly={Boolean(linea.presentacionId)}
                       onChange={(evento) =>
                         cambiarLinea(indice, {
                           precioUnitarioVenta: evento.target.value,
