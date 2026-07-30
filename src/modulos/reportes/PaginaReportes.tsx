@@ -1,10 +1,45 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
 import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
+import { ventasApi } from '../ventas/ventasApi';
+import {
+  BarraContadoFiado,
+  GraficoDeudas,
+  GraficoMasVendidos,
+  GraficoVentasPorDia,
+} from './GraficosReportes';
 import { reportesApi } from './reportesApi';
+
+// Arma la serie diaria (un punto por día del rango) sumando el total de las ventas.
+function serieVentasPorDia(
+  ventas: { fecha: string; total: number }[],
+  desde: string,
+  hasta: string,
+): { dia: string; etiqueta: string; total: number }[] {
+  const porDia = new Map<string, number>();
+  for (const venta of ventas) {
+    const dia = venta.fecha.slice(0, 10);
+    if (dia >= desde && dia <= hasta) {
+      porDia.set(dia, (porDia.get(dia) ?? 0) + venta.total);
+    }
+  }
+  const serie: { dia: string; etiqueta: string; total: number }[] = [];
+  const cursor = new Date(`${desde}T00:00:00`);
+  const fin = new Date(`${hasta}T00:00:00`);
+  // Límite de seguridad para rangos enormes (no dibujar miles de barras).
+  for (let i = 0; cursor <= fin && i < 120; i++) {
+    const dia = cursor.toISOString().slice(0, 10);
+    const etiqueta = `${String(cursor.getDate()).padStart(2, '0')}/${String(
+      cursor.getMonth() + 1,
+    ).padStart(2, '0')}`;
+    serie.push({ dia, etiqueta, total: porDia.get(dia) ?? 0 });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return serie;
+}
 
 function primerDiaDelMes(): string {
   const hoy = new Date();
@@ -40,6 +75,12 @@ export function PaginaReportes() {
     queryKey: ['reportes', 'stock'],
     queryFn: reportesApi.stock,
   });
+  const ventas = useQuery({ queryKey: ['ventas'], queryFn: ventasApi.listar });
+
+  const serieDiaria = useMemo(
+    () => serieVentasPorDia(ventas.data ?? [], desde, hasta),
+    [ventas.data, desde, hasta],
+  );
 
   const totalDeuda = deudas.data?.reduce((suma, deuda) => suma + deuda.saldoDeudor, 0) ?? 0;
 
@@ -116,12 +157,40 @@ export function PaginaReportes() {
               </p>
             </div>
           </div>
+          {ganancias.data.totalVendido > 0 && (
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="mb-2 text-sm text-gray-500">Cómo se cobró</p>
+              <BarraContadoFiado
+                contado={ganancias.data.totalContado}
+                fiado={ganancias.data.totalFiado}
+              />
+            </div>
+          )}
         </section>
       )}
+
+      <section className="tarjeta">
+        <h3 className="mb-1 text-lg font-semibold">Ventas por día</h3>
+        <p className="mb-2 text-sm text-gray-500">
+          Cuánto se vendió cada día del período (pasá el mouse para ver el detalle).
+        </p>
+        <EstadoConsulta cargando={ventas.isLoading} error={ventas.error} />
+        {ventas.data && <GraficoVentasPorDia datos={serieDiaria} />}
+      </section>
 
       <section>
         <h3 className="mb-2 text-lg font-semibold">Productos más vendidos en el período</h3>
         <EstadoConsulta cargando={masVendidos.isLoading} error={masVendidos.error} />
+        {masVendidos.data && masVendidos.data.length > 0 && (
+          <div className="tarjeta mb-3">
+            <GraficoMasVendidos
+              datos={masVendidos.data.map((p) => ({
+                nombre: p.nombre,
+                totalVendido: p.totalVendido,
+              }))}
+            />
+          </div>
+        )}
         {masVendidos.data && (
           <div className="tarjeta overflow-x-auto p-0">
             <table className="w-full">
@@ -175,6 +244,16 @@ export function PaginaReportes() {
           )}
         </h3>
         <EstadoConsulta cargando={deudas.isLoading} error={deudas.error} />
+        {deudas.data && deudas.data.length > 0 && (
+          <div className="tarjeta mb-3">
+            <GraficoDeudas
+              datos={deudas.data.map((d) => ({
+                nombre: d.nombre,
+                saldoDeudor: d.saldoDeudor,
+              }))}
+            />
+          </div>
+        )}
         {deudas.data && (
           <div className="tarjeta overflow-x-auto p-0">
             <table className="w-full">
