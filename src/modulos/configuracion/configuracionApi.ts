@@ -19,6 +19,7 @@ export interface ConfiguracionNegocio {
   categorias: CategoriaConfig[];
   features: FeaturesNegocio;
   etiquetas: Record<string, string>;
+  iconos: Record<string, string>;
 }
 
 export const configuracionApi = {

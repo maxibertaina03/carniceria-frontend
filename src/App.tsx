@@ -57,9 +57,18 @@ export function App() {
   const ubicacion = useLocation();
   const { config, tieneModulo } = useConfiguracion();
 
-  // El menú se arma según los módulos habilitados para el rubro del negocio.
-  const principales = seccionesPrincipales.filter((s) => tieneModulo(codigoModulo(s)));
-  const secundarias = seccionesSecundarias.filter((s) => tieneModulo(codigoModulo(s)));
+  // El menú se arma según los módulos habilitados para el rubro del negocio,
+  // y el ícono puede venir cambiado por el rubro (ej. Productos: 🥩 vs 🍝).
+  const conIcono = (s: Seccion): Seccion => ({
+    ...s,
+    icono: config.iconos[codigoModulo(s)] ?? s.icono,
+  });
+  const principales = seccionesPrincipales
+    .filter((s) => tieneModulo(codigoModulo(s)))
+    .map(conIcono);
+  const secundarias = seccionesSecundarias
+    .filter((s) => tieneModulo(codigoModulo(s)))
+    .map(conIcono);
   const todasLasSecciones = [...principales, ...secundarias];
 
   const enSeccionSecundaria = secundarias.some((s) =>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
+import { MiniaturaAmpliable } from '../../compartido/componentes/MiniaturaAmpliable';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
 import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { GestionPresentaciones } from '../presentaciones/GestionPresentaciones';
@@ -132,9 +133,8 @@ export function ListaProductos() {
                 <div>
                   <p className="flex items-center gap-2 font-semibold">
                     {producto.imagen && (
-                      <img
+                      <MiniaturaAmpliable
                         src={producto.imagen}
-                        alt=""
                         className="h-8 w-8 shrink-0 rounded object-cover"
                       />
                     )}
@@ -197,9 +197,8 @@ export function ListaProductos() {
                   <td className="celda font-medium">
                     <div className="flex items-center gap-2">
                       {producto.imagen && (
-                        <img
+                        <MiniaturaAmpliable
                           src={producto.imagen}
-                          alt=""
                           className="h-9 w-9 shrink-0 rounded object-cover"
                         />
                       )}
