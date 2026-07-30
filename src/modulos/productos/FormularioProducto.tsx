@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { AvisoError } from '../../compartido/componentes/AvisoError';
 import { Modal } from '../../compartido/componentes/Modal';
+import { redimensionarImagen } from '../../compartido/imagen';
 import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { Producto } from './productosApi';
 import { useMutacionesProducto } from './useProductos';
@@ -17,8 +18,18 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
   const { crear, actualizar } = useMutacionesProducto();
   const { config } = useConfiguracion();
   const [error, setError] = useState<string | null>(null);
+  const [imagen, setImagen] = useState<string | null>(producto?.imagen ?? null);
 
   const editando = Boolean(producto);
+
+  async function elegirImagen(archivo?: File) {
+    if (!archivo) return;
+    try {
+      setImagen(await redimensionarImagen(archivo));
+    } catch (excepcion) {
+      setError(mensajeDeError(excepcion));
+    }
+  }
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -33,6 +44,8 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
       costoUnitarioReferencia: Number(formulario.get('costo') ?? 0),
       precioVentaReferencia: Number(formulario.get('precio') ?? 0),
       seVende: formulario.get('seVende') === 'on',
+      // Foto del producto (o null si no tiene / se quitó).
+      imagen,
       // Días de vencimiento: solo se manda en rubros con lotes (vacío = null).
       ...(config.features.lotes
         ? { diasVencimiento: diasStr ? Number(diasStr) : null }
@@ -59,6 +72,39 @@ export function FormularioProducto({ abierto, alCerrar, producto }: Props) {
       alCerrar={alCerrar}
     >
       <form onSubmit={manejarEnvio} className="flex flex-col gap-4">
+        <div>
+          <label className="etiqueta">Foto (opcional)</label>
+          <div className="flex items-center gap-3">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-2xl text-gray-300">
+              {imagen ? (
+                <img src={imagen} alt="Producto" className="h-full w-full object-cover" />
+              ) : (
+                '📷'
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="boton-secundario cursor-pointer text-center text-sm">
+                {imagen ? 'Cambiar foto' : 'Subir foto'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(evento) => elegirImagen(evento.target.files?.[0])}
+                />
+              </label>
+              {imagen && (
+                <button
+                  type="button"
+                  className="text-sm font-medium text-red-600 hover:underline"
+                  onClick={() => setImagen(null)}
+                >
+                  Quitar foto
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="etiqueta" htmlFor="nombre">Nombre</label>
           <input

@@ -130,13 +130,22 @@ export function ListaProductos() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold">
-                    {producto.nombre}
-                    {!producto.activo && (
-                      <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-normal">
-                        desactivado
-                      </span>
+                  <p className="flex items-center gap-2 font-semibold">
+                    {producto.imagen && (
+                      <img
+                        src={producto.imagen}
+                        alt=""
+                        className="h-8 w-8 shrink-0 rounded object-cover"
+                      />
                     )}
+                    <span>
+                      {producto.nombre}
+                      {!producto.activo && (
+                        <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-normal">
+                          desactivado
+                        </span>
+                      )}
+                    </span>
                   </p>
                   <p className="text-sm text-gray-500">
                     {nombreCategoria(producto.categoria)}
@@ -186,12 +195,23 @@ export function ListaProductos() {
                   className={producto.activo ? '' : 'bg-gray-50 text-gray-400'}
                 >
                   <td className="celda font-medium">
-                    {producto.nombre}
-                    {!producto.activo && (
-                      <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs">
-                        desactivado
+                    <div className="flex items-center gap-2">
+                      {producto.imagen && (
+                        <img
+                          src={producto.imagen}
+                          alt=""
+                          className="h-9 w-9 shrink-0 rounded object-cover"
+                        />
+                      )}
+                      <span>
+                        {producto.nombre}
+                        {!producto.activo && (
+                          <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs">
+                            desactivado
+                          </span>
+                        )}
                       </span>
-                    )}
+                    </div>
                   </td>
                   <td className="celda">
                     {nombreCategoria(producto.categoria)}

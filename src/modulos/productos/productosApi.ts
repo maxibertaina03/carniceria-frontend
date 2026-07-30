@@ -11,6 +11,7 @@ export interface Producto {
   precioVentaReferencia: number;
   seVende: boolean;
   diasVencimiento: number | null;
+  imagen: string | null;
   activo: boolean;
   fechaCreacion: string;
 }
@@ -25,6 +26,8 @@ export interface DatosProducto {
   seVende?: boolean;
   // Días de vencimiento (solo rubros con lotes). null para quitarlo.
   diasVencimiento?: number | null;
+  // Foto del producto (data URI). null para quitarla.
+  imagen?: string | null;
   // Cuánto hay hoy del producto al darlo de alta.
   stockInicial?: number;
 }
