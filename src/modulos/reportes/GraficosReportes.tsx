@@ -63,7 +63,13 @@ export function GraficoVentasPorDia({
           formatter={(v) => [moneda(v as number), 'Vendido']}
           labelFormatter={(l) => `Día ${l}`}
         />
-        <Bar dataKey="total" fill={AZUL} radius={[4, 4, 0, 0]} maxBarSize={44} />
+        <Bar
+          dataKey="total"
+          fill={AZUL}
+          radius={[4, 4, 0, 0]}
+          maxBarSize={44}
+          isAnimationActive={false}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -101,7 +107,13 @@ export function GraficoMasVendidos({
           contentStyle={estiloTooltip}
           formatter={(v) => [moneda(v as number), 'Vendido']}
         />
-        <Bar dataKey="totalVendido" fill={AZUL} radius={[0, 4, 4, 0]} maxBarSize={26}>
+        <Bar
+          dataKey="totalVendido"
+          fill={AZUL}
+          radius={[0, 4, 4, 0]}
+          maxBarSize={26}
+          isAnimationActive={false}
+        >
           <LabelList
             dataKey="totalVendido"
             position="right"
@@ -176,7 +188,12 @@ export function GraficoDeudas({
           contentStyle={estiloTooltip}
           formatter={(v) => [moneda(v as number), 'Debe']}
         />
-        <Bar dataKey="saldoDeudor" radius={[0, 4, 4, 0]} maxBarSize={24}>
+        <Bar
+          dataKey="saldoDeudor"
+          radius={[0, 4, 4, 0]}
+          maxBarSize={24}
+          isAnimationActive={false}
+        >
           {top.map((_, i) => (
             <Cell key={i} fill={AMBAR} />
           ))}
