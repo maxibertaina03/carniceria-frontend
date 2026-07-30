@@ -10,7 +10,10 @@ export function useProductos(incluirInactivos = false) {
 
 export function useMutacionesProducto() {
   const cliente = useQueryClient();
-  const invalidar = () => cliente.invalidateQueries({ queryKey: ['productos'] });
+  const invalidar = () => {
+    cliente.invalidateQueries({ queryKey: ['productos'] });
+    cliente.invalidateQueries({ queryKey: ['presentaciones'] });
+  };
 
   const crear = useMutation({
     mutationFn: (datos: DatosProducto) => productosApi.crear(datos),
@@ -39,5 +42,15 @@ export function useMutacionesProducto() {
     onSuccess: invalidar,
   });
 
-  return { crear, actualizar, ajustarStock, desactivar };
+  const actualizarPrecios = useMutation({
+    mutationFn: (datos: {
+      porcentaje: number;
+      categorias?: string[];
+      redondearA?: number;
+      incluirPresentaciones?: boolean;
+    }) => productosApi.actualizarPrecios(datos),
+    onSuccess: invalidar,
+  });
+
+  return { crear, actualizar, ajustarStock, desactivar, actualizarPrecios };
 }

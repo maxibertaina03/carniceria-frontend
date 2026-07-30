@@ -64,4 +64,28 @@ export const productosApi = {
   async desactivar(id: string): Promise<void> {
     await clienteHttp.delete(`/productos/${id}`);
   },
+
+  async actualizarPrecios(datos: {
+    porcentaje: number;
+    categorias?: string[];
+    redondearA?: number;
+    incluirPresentaciones?: boolean;
+  }): Promise<{ productos: number; presentaciones: number }> {
+    const { data } = await clienteHttp.post('/productos/actualizar-precios', datos);
+    return data;
+  },
 };
+
+// Precio nuevo tras aplicar el porcentaje (misma fórmula que el backend).
+// Se usa para la vista previa antes de aplicar.
+export function nuevoPrecioPorcentaje(
+  precio: number,
+  porcentaje: number,
+  redondearA?: number,
+): number {
+  const valor = precio * (1 + porcentaje / 100);
+  if (redondearA && redondearA > 0) {
+    return Math.round(valor / redondearA) * redondearA;
+  }
+  return Math.round(valor * 100) / 100;
+}

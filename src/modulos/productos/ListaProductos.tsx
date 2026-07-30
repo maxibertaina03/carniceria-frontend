@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { mensajeDeError } from '../../compartido/clienteHttp';
 import { EstadoConsulta } from '../../compartido/componentes/EstadoConsulta';
 import { MiniaturaAmpliable } from '../../compartido/componentes/MiniaturaAmpliable';
+import { ModalActualizarPrecios } from './ModalActualizarPrecios';
 import { formatearCantidad, formatearMoneda } from '../../compartido/formato';
 import { useConfiguracion } from '../configuracion/ConfiguracionProvider';
 import { GestionPresentaciones } from '../presentaciones/GestionPresentaciones';
@@ -20,6 +21,7 @@ export function ListaProductos() {
   const [productoAAjustar, setProductoAAjustar] = useState<Producto | null>(null);
   const [productoPresentaciones, setProductoPresentaciones] =
     useState<Producto | null>(null);
+  const [modalPreciosAbierto, setModalPreciosAbierto] = useState(false);
 
   function abrirNuevo() {
     setProductoEnEdicion(null);
@@ -99,9 +101,17 @@ export function ListaProductos() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-2xl font-bold">Productos y stock</h2>
-        <button className="boton-primario" onClick={abrirNuevo}>
-          + Nuevo producto
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="boton-secundario"
+            onClick={() => setModalPreciosAbierto(true)}
+          >
+            Actualizar precios
+          </button>
+          <button className="boton-primario" onClick={abrirNuevo}>
+            + Nuevo producto
+          </button>
+        </div>
       </div>
 
       <label className="mb-3 flex items-center gap-2 text-sm text-gray-600">
@@ -261,6 +271,10 @@ export function ListaProductos() {
           producto={productoPresentaciones}
         />
       )}
+      <ModalActualizarPrecios
+        abierto={modalPreciosAbierto}
+        alCerrar={() => setModalPreciosAbierto(false)}
+      />
     </div>
   );
 }
