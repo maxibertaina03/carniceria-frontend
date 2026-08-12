@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { RequiereAdmin } from './modulos/admin/RequiereAdmin';
+import { WidgetAsistente } from './modulos/asistente/WidgetAsistente';
+import { PaginaAyuda } from './modulos/ayuda/PaginaAyuda';
 import { useConfiguracion } from './modulos/configuracion/ConfiguracionProvider';
 import { ComprobanteImprimible } from './modulos/facturacion/ComprobanteImprimible';
 import { FormularioComprobante } from './modulos/facturacion/FormularioComprobante';
@@ -47,6 +49,7 @@ const seccionesSecundarias: Seccion[] = [
   { ruta: '/desposte', nombre: 'Desposte', icono: '🔪' },
   { ruta: '/produccion', nombre: 'Producción', icono: '🏭' },
   { ruta: '/admin', nombre: 'Admin', icono: '🔒' },
+  { ruta: '/ayuda', nombre: 'Ayuda', icono: '❓' },
 ];
 
 // El código de módulo es la ruta sin la barra inicial (ej. '/inicio' -> 'inicio').
@@ -127,6 +130,7 @@ export function App() {
           <Route path="/clientes" element={<ListaClientes />} />
           <Route path="/clientes/:id" element={<FichaCliente />} />
           <Route path="/reportes" element={<PaginaReportes />} />
+          <Route path="/ayuda" element={<PaginaAyuda />} />
           <Route
             path="/admin"
             element={
@@ -214,6 +218,9 @@ export function App() {
           Más
         </button>
       </nav>
+
+      {/* Asistente de soporte (chatbot): solo si el rubro lo tiene habilitado */}
+      {tieneModulo('asistente') && <WidgetAsistente />}
     </div>
   );
 }
