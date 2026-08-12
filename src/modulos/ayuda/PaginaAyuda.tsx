@@ -172,7 +172,9 @@ export function PaginaAyuda() {
       </section>
 
       <p className="mt-6 text-center text-xs text-gray-400">
-        ¿Te quedó una duda? Preguntale al asistente 💬 o escribinos.
+        {tieneModulo('asistente')
+          ? '¿Te quedó una duda? Preguntale al asistente 💬 o escribinos.'
+          : '¿Te quedó una duda? Escribinos y te ayudamos.'}
       </p>
     </div>
   );

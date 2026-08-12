@@ -46,7 +46,14 @@ export function formatearMes(fecha: string | Date): string {
 }
 
 export function formatearFecha(fecha: string | Date): string {
-  return new Date(fecha).toLocaleDateString('es-AR', {
+  // Una fecha "solo día" (AAAA-MM-DD) la interpreta JS como medianoche UTC; al
+  // mostrarla en hora Argentina (−3) retrocedería un día. Se fuerza a hora local
+  // agregando la hora. Las fechas con hora (ISO completo) se dejan tal cual.
+  const valor =
+    typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha)
+      ? new Date(`${fecha}T00:00:00`)
+      : new Date(fecha);
+  return valor.toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
